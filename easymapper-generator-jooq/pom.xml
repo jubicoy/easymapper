@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>fi.jubic</groupId>
+        <artifactId>easymapper</artifactId>
+        <version>0.1.0-rc0</version>
+    </parent>
+
+    <artifactId>easymapper-generator-jooq</artifactId>
+    <version>0.1.0-rc0</version>
+
+    <name>easymapper-generator-jooq</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.google.auto.service</groupId>
+            <artifactId>auto-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.squareup</groupId>
+            <artifactId>javapoet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>fi.jubic</groupId>
+            <artifactId>easymapper-jooq</artifactId>
+            <version>0.1.0-rc0</version>
+        </dependency>
+        <dependency>
+            <groupId>fi.jubic</groupId>
+            <artifactId>easymapper-generator-core</artifactId>
+            <version>0.1.0-rc0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.199</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.database-rider</groupId>
+            <artifactId>rider-junit5</artifactId>
+            <version>1.9.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>fi.jubic</groupId>
+            <artifactId>easyvalue</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq-codegen-maven</artifactId>
+                <version>3.11.11</version>
+                <executions>
+                    <execution>
+                        <id>chat-sample</id>
+                        <configuration>
+                            <jdbc>
+                                <driver>org.h2.Driver</driver>
+                                <url>jdbc:h2:file:${project.basedir}/target/tmp/test-db</url>
+                                <user>SA</user>
+                                <password/>
+                            </jdbc>
+                            <generator>
+                                <name>org.jooq.codegen.JavaGenerator</name>
+                                <generate>
+                                    <daos>true</daos>
+                                </generate>
+                                <database>
+                                    <name>org.jooq.meta.h2.H2Database</name>
+                                    <includes>.*</includes>
+                                    <inputSchema>CHAT_SAMPLE</inputSchema>
+                                </database>
+                                <target>
+                                    <packageName>fi.jubic.easymapper.jooqtest.chatroom.db</packageName>
+                                    <directory>src/test/java</directory>
+                                </target>
+                            </generator>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.h2database</groupId>
+                        <artifactId>h2</artifactId>
+                        <version>1.4.199</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+</project>

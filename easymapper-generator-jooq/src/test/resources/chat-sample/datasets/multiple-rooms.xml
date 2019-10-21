@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<dataset>
+    <CHAT_SAMPLE.CHAT_USER id="1" role="SUPERADMIN" name="Antti Admin" />
+    <CHAT_SAMPLE.CHAT_USER id="2" role="USER" name="Unto User" />
+    <CHAT_SAMPLE.CHAT_USER id="3" role="USER" name="Matias Messager" />
+
+    <CHAT_SAMPLE.ROOM id="1" name="#random" administrator_id="1" created_by_id="2" />
+    <CHAT_SAMPLE.ROOM id="2" name="#general" administrator_id="1" created_by_id="3" />
+
+    <CHAT_SAMPLE.ROOM_MEMBERSHIP id="1" room_id="1" user_id="1" />
+    <CHAT_SAMPLE.ROOM_MEMBERSHIP id="2" room_id="1" user_id="2" />
+    <CHAT_SAMPLE.ROOM_MEMBERSHIP id="3" room_id="2" user_id="1" />
+    <CHAT_SAMPLE.ROOM_MEMBERSHIP id="4" room_id="2" user_id="3" />
+
+    <CHAT_SAMPLE.MESSAGE />
+</dataset>
