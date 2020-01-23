@@ -16,6 +16,7 @@ import javax.annotation.Generated;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
+import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
@@ -40,7 +41,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Room extends TableImpl<RoomRecord> {
 
-    private static final long serialVersionUID = -325385199;
+    private static final long serialVersionUID = 1999794289;
 
     /**
      * The reference instance of <code>CHAT_SAMPLE.ROOM</code>
@@ -58,7 +59,7 @@ public class Room extends TableImpl<RoomRecord> {
     /**
      * The column <code>CHAT_SAMPLE.ROOM.ID</code>.
      */
-    public final TableField<RoomRecord, Integer> ID = createField("ID", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this, "");
+    public final TableField<RoomRecord, Integer> ID = createField("ID", org.jooq.impl.SQLDataType.INTEGER.nullable(false).identity(true), this, "");
 
     /**
      * The column <code>CHAT_SAMPLE.ROOM.NAME</code>.
@@ -122,6 +123,14 @@ public class Room extends TableImpl<RoomRecord> {
     @Override
     public List<Index> getIndexes() {
         return Arrays.<Index>asList(Indexes.CONSTRAINT_INDEX_2, Indexes.CONSTRAINT_INDEX_26, Indexes.PRIMARY_KEY_2);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Identity<RoomRecord, Integer> getIdentity() {
+        return Keys.IDENTITY_ROOM;
     }
 
     /**

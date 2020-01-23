@@ -16,6 +16,7 @@ import fi.jubic.easymapper.jooqtest.chatroom.db.tables.records.RoomRecord;
 import javax.annotation.Generated;
 
 import org.jooq.ForeignKey;
+import org.jooq.Identity;
 import org.jooq.UniqueKey;
 import org.jooq.impl.Internal;
 
@@ -38,6 +39,10 @@ public class Keys {
     // IDENTITY definitions
     // -------------------------------------------------------------------------
 
+    public static final Identity<ChatUserRecord, Integer> IDENTITY_CHAT_USER = Identities0.IDENTITY_CHAT_USER;
+    public static final Identity<MessageRecord, Integer> IDENTITY_MESSAGE = Identities0.IDENTITY_MESSAGE;
+    public static final Identity<RoomRecord, Integer> IDENTITY_ROOM = Identities0.IDENTITY_ROOM;
+    public static final Identity<RoomMembershipRecord, Integer> IDENTITY_ROOM_MEMBERSHIP = Identities0.IDENTITY_ROOM_MEMBERSHIP;
 
     // -------------------------------------------------------------------------
     // UNIQUE and PRIMARY KEY definitions
@@ -62,6 +67,13 @@ public class Keys {
     // -------------------------------------------------------------------------
     // [#1459] distribute members to avoid static initialisers > 64kb
     // -------------------------------------------------------------------------
+
+    private static class Identities0 {
+        public static Identity<ChatUserRecord, Integer> IDENTITY_CHAT_USER = Internal.createIdentity(ChatUser.CHAT_USER, ChatUser.CHAT_USER.ID);
+        public static Identity<MessageRecord, Integer> IDENTITY_MESSAGE = Internal.createIdentity(Message.MESSAGE, Message.MESSAGE.ID);
+        public static Identity<RoomRecord, Integer> IDENTITY_ROOM = Internal.createIdentity(Room.ROOM, Room.ROOM.ID);
+        public static Identity<RoomMembershipRecord, Integer> IDENTITY_ROOM_MEMBERSHIP = Internal.createIdentity(RoomMembership.ROOM_MEMBERSHIP, RoomMembership.ROOM_MEMBERSHIP.ID);
+    }
 
     private static class UniqueKeys0 {
         public static final UniqueKey<ChatUserRecord> CONSTRAINT_8 = Internal.createUniqueKey(ChatUser.CHAT_USER, "CONSTRAINT_8", ChatUser.CHAT_USER.ID);

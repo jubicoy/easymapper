@@ -16,6 +16,7 @@ import javax.annotation.Generated;
 
 import org.jooq.Field;
 import org.jooq.ForeignKey;
+import org.jooq.Identity;
 import org.jooq.Index;
 import org.jooq.Name;
 import org.jooq.Record;
@@ -40,7 +41,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Message extends TableImpl<MessageRecord> {
 
-    private static final long serialVersionUID = -41398614;
+    private static final long serialVersionUID = 1772722568;
 
     /**
      * The reference instance of <code>CHAT_SAMPLE.MESSAGE</code>
@@ -58,7 +59,7 @@ public class Message extends TableImpl<MessageRecord> {
     /**
      * The column <code>CHAT_SAMPLE.MESSAGE.ID</code>.
      */
-    public final TableField<MessageRecord, Integer> ID = createField("ID", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this, "");
+    public final TableField<MessageRecord, Integer> ID = createField("ID", org.jooq.impl.SQLDataType.INTEGER.nullable(false).identity(true), this, "");
 
     /**
      * The column <code>CHAT_SAMPLE.MESSAGE.TEXT</code>.
@@ -122,6 +123,14 @@ public class Message extends TableImpl<MessageRecord> {
     @Override
     public List<Index> getIndexes() {
         return Arrays.<Index>asList(Indexes.CONSTRAINT_INDEX_6, Indexes.CONSTRAINT_INDEX_63, Indexes.PRIMARY_KEY_6);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Identity<MessageRecord, Integer> getIdentity() {
+        return Keys.IDENTITY_MESSAGE;
     }
 
     /**
