@@ -13,7 +13,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public interface TableMapper<R extends Record, T>
-        extends Mapper<Record, T>, Mangler<Record, T> {
+        extends Mapper<Record, T>, Mangler<Record, R, T> {
     TableMapper<R, T> alias(Table<R> alias);
     Table<R> table();
 

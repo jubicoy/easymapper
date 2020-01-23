@@ -205,7 +205,7 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
             MethodSpec.Builder writeBuilder = MethodSpec.methodBuilder("write")
                     .addModifiers(Modifier.PUBLIC)
                     .addAnnotation(Override.class)
-                    .returns(ClassName.get(Record.class))
+                    .returns(R)
                     .addParameter(
                             ClassName.get(Record.class),
                             "output"
@@ -218,7 +218,11 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
 
             Stream
                     .concat(
-                            valueDef.getProperties().stream(),
+                            valueDef.getProperties().stream()
+                                    .filter(property -> valueDef.getId()
+                                            .map(id -> !property.getName().equals(id.getName()))
+                                            .orElse(true)
+                                    ),
                             valueDef.getReferences().stream()
                     )
                     .forEach(prop -> writeBuilder.addStatement(
