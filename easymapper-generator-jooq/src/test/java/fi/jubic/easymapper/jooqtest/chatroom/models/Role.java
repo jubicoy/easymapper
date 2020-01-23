@@ -1,4 +1,4 @@
-package fi.jubic.easymapper.jooqtest.chatroom;
+package fi.jubic.easymapper.jooqtest.chatroom.models;
 
 public enum Role {
     USER,

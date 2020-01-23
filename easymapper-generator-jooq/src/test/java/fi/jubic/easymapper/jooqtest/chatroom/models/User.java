@@ -1,4 +1,4 @@
-package fi.jubic.easymapper.jooqtest.chatroom;
+package fi.jubic.easymapper.jooqtest.chatroom.models;
 
 import fi.jubic.easymapper.annotations.EasyId;
 import fi.jubic.easymapper.jooqtest.chatroom.db.tables.records.ChatUserRecord;

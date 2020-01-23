@@ -2,6 +2,9 @@ package fi.jubic.easymapper.jooqtest.chatroom;
 
 import fi.jubic.easymapper.jooqtest.chatroom.db.tables.ChatUser;
 import fi.jubic.easymapper.jooqtest.chatroom.db.tables.records.ChatUserRecord;
+import fi.jubic.easymapper.jooqtest.chatroom.models.Role;
+import fi.jubic.easymapper.jooqtest.chatroom.models.User;
+import fi.jubic.easymapper.jooqtest.chatroom.models.UserTableMapper;
 import org.junit.jupiter.api.Test;
 
 import static fi.jubic.easymapper.jooqtest.chatroom.db.tables.ChatUser.CHAT_USER;
