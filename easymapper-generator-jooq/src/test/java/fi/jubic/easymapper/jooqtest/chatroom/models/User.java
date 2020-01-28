@@ -18,6 +18,8 @@ public abstract class User {
 
     public abstract String getName();
 
+    public abstract boolean isDeleted();
+
     public abstract List<Message> getMessages();
 
     public abstract List<Room> getRooms();
@@ -37,5 +39,6 @@ public abstract class User {
             .setIdAccessor(CHAT_USER.ID)
             .setRoleAccessor(CHAT_USER.ROLE, Role::toString, Role::parse)
             .setNameAccessor(CHAT_USER.NAME)
+            .setDeletedAccessor(CHAT_USER.DELETED)
             .build();
 }

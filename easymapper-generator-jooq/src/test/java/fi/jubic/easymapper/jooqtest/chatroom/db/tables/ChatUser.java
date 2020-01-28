@@ -41,7 +41,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ChatUser extends TableImpl<ChatUserRecord> {
 
-    private static final long serialVersionUID = 1518614947;
+    private static final long serialVersionUID = -2067669685;
 
     /**
      * The reference instance of <code>CHAT_SAMPLE.CHAT_USER</code>
@@ -70,6 +70,11 @@ public class ChatUser extends TableImpl<ChatUserRecord> {
      * The column <code>CHAT_SAMPLE.CHAT_USER.NAME</code>.
      */
     public final TableField<ChatUserRecord, String> NAME = createField("NAME", org.jooq.impl.SQLDataType.VARCHAR(255).nullable(false), this, "");
+
+    /**
+     * The column <code>CHAT_SAMPLE.CHAT_USER.DELETED</code>.
+     */
+    public final TableField<ChatUserRecord, Boolean> DELETED = createField("DELETED", org.jooq.impl.SQLDataType.BOOLEAN.nullable(false), this, "");
 
     /**
      * Create a <code>CHAT_SAMPLE.CHAT_USER</code> table reference

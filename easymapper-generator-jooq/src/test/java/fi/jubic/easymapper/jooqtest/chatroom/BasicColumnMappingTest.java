@@ -17,11 +17,13 @@ class BasicColumnMappingTest {
         record.set(CHAT_USER.ID, 1);
         record.set(CHAT_USER.ROLE, "USER");
         record.set(CHAT_USER.NAME, "Antti Admin");
+        record.set(CHAT_USER.DELETED, false);
 
         UserTableMapper<ChatUserRecord> mapper = UserTableMapper.builder(CHAT_USER)
                 .setIdAccessor(CHAT_USER.ID)
                 .setRoleAccessor(CHAT_USER.ROLE, Role::toString, Role::parse)
                 .setNameAccessor(CHAT_USER.NAME)
+                .setDeletedAccessor(CHAT_USER.DELETED)
                 .build();
 
         User user = mapper.map(record);
@@ -31,6 +33,7 @@ class BasicColumnMappingTest {
                         .setId(1)
                         .setRole(Role.USER)
                         .setName("Antti Admin")
+                        .setDeleted(false)
                         .build(),
                 user
         );
@@ -44,11 +47,13 @@ class BasicColumnMappingTest {
         record.set(alias.ID, 1);
         record.set(alias.ROLE, "USER");
         record.set(alias.NAME, "Antti Admin");
+        record.set(alias.DELETED, true);
 
         UserTableMapper<ChatUserRecord> mapper = UserTableMapper.builder(CHAT_USER)
                 .setIdAccessor(CHAT_USER.ID)
                 .setRoleAccessor(CHAT_USER.ROLE, Role::toString, Role::parse)
                 .setNameAccessor(CHAT_USER.NAME)
+                .setDeletedAccessor(CHAT_USER.DELETED)
                 .build();
 
         User user = mapper.alias(alias)
@@ -59,6 +64,7 @@ class BasicColumnMappingTest {
                         .setId(1)
                         .setRole(Role.USER)
                         .setName("Antti Admin")
+                        .setDeleted(true)
                         .build(),
                 user
         );

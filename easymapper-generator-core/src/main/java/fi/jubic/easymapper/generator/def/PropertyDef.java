@@ -5,18 +5,30 @@ import com.squareup.javapoet.TypeName;
 import javax.lang.model.element.ExecutableElement;
 
 public class PropertyDef {
+    private final PropertyAccess access;
     private final ExecutableElement element;
     private final TypeName type;
     private final String name;
 
     public PropertyDef(
+            PropertyAccess access,
             ExecutableElement element,
             TypeName type,
             String name
     ) {
+        this.access = access;
         this.element = element;
-        this.type = type;
+        if (type.isPrimitive()) {
+            this.type = type.box();
+        }
+        else {
+            this.type = type;
+        }
         this.name = name;
+    }
+
+    public PropertyAccess getAccess() {
+        return access;
     }
 
     public ExecutableElement getElement() {

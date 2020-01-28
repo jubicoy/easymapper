@@ -22,11 +22,12 @@ import javax.annotation.Generated;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class ChatUser implements Serializable {
 
-    private static final long serialVersionUID = -133150047;
+    private static final long serialVersionUID = -650008032;
 
     private Integer id;
     private String  role;
     private String  name;
+    private Boolean deleted;
 
     public ChatUser() {}
 
@@ -34,16 +35,19 @@ public class ChatUser implements Serializable {
         this.id = value.id;
         this.role = value.role;
         this.name = value.name;
+        this.deleted = value.deleted;
     }
 
     public ChatUser(
         Integer id,
         String  role,
-        String  name
+        String  name,
+        Boolean deleted
     ) {
         this.id = id;
         this.role = role;
         this.name = name;
+        this.deleted = deleted;
     }
 
     public Integer getId() {
@@ -70,6 +74,14 @@ public class ChatUser implements Serializable {
         this.name = name;
     }
 
+    public Boolean getDeleted() {
+        return this.deleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        this.deleted = deleted;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("ChatUser (");
@@ -77,6 +89,7 @@ public class ChatUser implements Serializable {
         sb.append(id);
         sb.append(", ").append(role);
         sb.append(", ").append(name);
+        sb.append(", ").append(deleted);
 
         sb.append(")");
         return sb.toString();

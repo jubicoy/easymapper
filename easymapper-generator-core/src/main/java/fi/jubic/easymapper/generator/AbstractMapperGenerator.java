@@ -6,6 +6,7 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import fi.jubic.easymapper.annotations.EasyId;
+import fi.jubic.easymapper.generator.def.PropertyAccess;
 import fi.jubic.easymapper.generator.def.PropertyDef;
 import fi.jubic.easymapper.generator.def.ValueDef;
 import fi.jubic.easyvalue.EasyValue;
@@ -71,7 +72,10 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                 .filter(method -> method.getKind() == ElementKind.METHOD)
                 .map(method -> (ExecutableElement) method)
                 .filter(method -> method.getModifiers().contains(Modifier.ABSTRACT))
-                .filter(method -> method.getSimpleName().toString().startsWith("get"))
+                .filter(
+                        method -> method.getSimpleName().toString().startsWith("get")
+                                || method.getSimpleName().toString().startsWith("is")
+                )
                 .collect(Collectors.toList());
 
         return new ValueDef(
@@ -79,6 +83,7 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                 element,
                 getIdField(element)
                         .map(id -> new PropertyDef(
+                                PropertyAccess.Get,
                                 id,
                                 TypeName.get(id.getReturnType()),
                                 id.getSimpleName().toString()
@@ -89,15 +94,19 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                         .filter(method -> !isReference(method, roundEnvironment))
                         .filter(method -> !isCollectionReference(method, roundEnvironment))
                         .map(method -> new PropertyDef(
+                                method.getSimpleName().toString().startsWith("get")
+                                        ? PropertyAccess.Get
+                                        : PropertyAccess.Is,
                                 method,
                                 TypeName.get(method.getReturnType()),
                                 method.getSimpleName().toString()
-                                        .replaceAll("^get", "")
+                                        .replaceAll("^(get|is)", "")
                         ))
                         .collect(Collectors.toList()),
                 propertyElements.stream()
                         .filter(method -> isReference(method, roundEnvironment))
                         .map(method -> new PropertyDef(
+                                PropertyAccess.Get,
                                 method,
                                 TypeName.get(method.getReturnType()),
                                 method.getSimpleName().toString()
@@ -107,6 +116,7 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                 propertyElements.stream()
                         .filter(method -> isCollectionReference(method, roundEnvironment))
                         .map(method -> new PropertyDef(
+                                PropertyAccess.Get,
                                 method,
                                 TypeName.get(method.getReturnType()),
                                 method.getSimpleName().toString()

@@ -77,4 +77,11 @@ public class ChatUserDao extends DAOImpl<ChatUserRecord, fi.jubic.easymapper.joo
     public List<fi.jubic.easymapper.jooqtest.chatroom.db.tables.pojos.ChatUser> fetchByName(String... values) {
         return fetch(ChatUser.CHAT_USER.NAME, values);
     }
+
+    /**
+     * Fetch records that have <code>DELETED IN (values)</code>
+     */
+    public List<fi.jubic.easymapper.jooqtest.chatroom.db.tables.pojos.ChatUser> fetchByDeleted(Boolean... values) {
+        return fetch(ChatUser.CHAT_USER.DELETED, values);
+    }
 }

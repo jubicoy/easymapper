@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <dataset>
-    <CHAT_SAMPLE.CHAT_USER id="1" role="SUPERADMIN" name="Antti Admin" />
-    <CHAT_SAMPLE.CHAT_USER id="2" role="USER" name="Unto User" />
+    <CHAT_SAMPLE.CHAT_USER id="1" role="SUPERADMIN" name="Antti Admin" deleted="false" />
+    <CHAT_SAMPLE.CHAT_USER id="2" role="USER" name="Unto User" deleted="false" />
 
     <CHAT_SAMPLE.ROOM id="1" name="#random" administrator_id="1" created_by_id="2" />
 

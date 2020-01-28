@@ -7,6 +7,7 @@ CREATE TABLE `CHAT_SAMPLE`.`CHAT_USER` (
     `id` int NOT NULL AUTO_INCREMENT,
     `role` varchar(100) NOT NULL,
     `name` varchar(255) NOT NULL,
+    `deleted` boolean NOT NULL,
     PRIMARY KEY (`id`)
 );
 CREATE TABLE `CHAT_SAMPLE`.`ROOM` (

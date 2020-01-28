@@ -27,6 +27,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.element.Modifier;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collector;
@@ -230,8 +231,9 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                             valueDef.getReferences().stream()
                     )
                     .forEach(prop -> writeBuilder.addStatement(
-                            "modifiedOutput = $N.write(modifiedOutput, value.get$N())",
+                            "modifiedOutput = $N.write(modifiedOutput, value.$L$N())",
                             firstToLower(prop.getName() + "Accessor"),
+                            prop.getAccess().getName(),
                             firstToUpper(prop.getName())
                     ));
 
@@ -742,6 +744,24 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
             // endregion setters
 
             // region build
+            CodeBlock.Builder buildStatementBuilder = CodeBlock.builder()
+                    .add("return new $T<>(this.table", ClassName.bestGuess(selfName));
+
+            Stream
+                    .concat(
+                            valueDef.getProperties().stream(),
+                            valueDef.getReferences().stream()
+                    )
+                    .map(PropertyDef::getName)
+                    .map(this::firstToLower)
+                    .map(name -> ", $T.requireNonNull(this." + name + "Accessor)")
+                    .forEach(code -> buildStatementBuilder.add(code, Objects.class));
+            valueDef.getReferences()
+                    .forEach(ref -> buildStatementBuilder.add(", null"));
+
+
+            buildStatementBuilder.add(")");
+
             builderBuilder.addMethod(
                     MethodSpec.methodBuilder("build")
                             .addModifiers(Modifier.PUBLIC)
@@ -751,26 +771,7 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                             R
                                     )
                             )
-                            .addStatement(
-                                    "return new $T<>($L)",
-                                    ClassName.bestGuess(selfName),
-                                    Stream.of(
-                                            Stream.of("this.table"),
-                                            Stream
-                                                    .concat(
-                                                            valueDef.getProperties().stream(),
-                                                            valueDef.getReferences().stream()
-                                                    )
-                                                    .map(PropertyDef::getName)
-                                                    .map(this::firstToLower)
-                                                    .map(name -> "this." + name + "Accessor"),
-                                            valueDef.getReferences()
-                                                    .stream()
-                                                    .map(ref -> "null")
-                                    )
-                                            .flatMap(Function.identity())
-                                            .collect(Collectors.joining(", "))
-                            )
+                            .addStatement(buildStatementBuilder.build())
                             .build()
             );
             // endregion build
