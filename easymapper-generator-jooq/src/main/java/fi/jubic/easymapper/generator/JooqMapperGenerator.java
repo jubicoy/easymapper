@@ -49,7 +49,11 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
     );
 
     @Override
-    public TypeSpec generate(ValueDef valueDef, Messager messager, RoundEnvironment roundEnvironment) {
+    public Optional<TypeSpec> generate(ValueDef valueDef, Messager messager, RoundEnvironment roundEnvironment) {
+        if (!valueDef.getId().isPresent()) {
+            return Optional.empty();
+        }
+
         String selfName = valueDef.getName() + "TableMapper";
         TypeName superInterface = ParameterizedTypeName.get(
                 ClassName.get(TableMapper.class),
@@ -776,7 +780,7 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
         }
         // endregion Builder
 
-        return mapperBuilder.build();
+        return Optional.of(mapperBuilder.build());
     }
 
     private TypeName typeJooqFieldAccessor(TypeName field) {

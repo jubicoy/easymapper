@@ -35,7 +35,7 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
      * @param messager Messager instance for logging.
      * @return Spec of the mapper class.
      */
-    public abstract TypeSpec generate(ValueDef valueDef, Messager messager, RoundEnvironment roundEnvironment);
+    public abstract Optional<TypeSpec> generate(ValueDef valueDef, Messager messager, RoundEnvironment roundEnvironment);
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnvironment) {
@@ -51,10 +51,12 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                 .filter(element -> element.getKind() == ElementKind.CLASS)
                 .map(element -> (TypeElement) element)
                 .map(element -> parseDef(element, roundEnvironment))
-                .forEach(def -> writeGenerator(
-                        def,
-                        generate(def, messager, roundEnvironment)
-                ));
+                .forEach(def -> generate(def, messager, roundEnvironment)
+                        .ifPresent(spec -> writeGenerator(
+                                def,
+                                spec
+                        ))
+                );
         return false;
     }
 
