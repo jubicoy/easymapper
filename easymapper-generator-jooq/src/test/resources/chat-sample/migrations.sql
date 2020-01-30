@@ -13,7 +13,7 @@ CREATE TABLE `CHAT_SAMPLE`.`CHAT_USER` (
 CREATE TABLE `CHAT_SAMPLE`.`ROOM` (
     `id` int NOT NULL AUTO_INCREMENT,
     `name` varchar(255) NOT NULL,
-    `administrator_id` int NOT NULL,
+    `administrator_id` int,
     `created_by_id` int NOT NULL,
     PRIMARY KEY (`id`),
     FOREIGN KEY (`administrator_id`) REFERENCES `CHAT_SAMPLE`.`CHAT_USER`(`id`),

@@ -41,7 +41,7 @@ import org.jooq.impl.TableImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Room extends TableImpl<RoomRecord> {
 
-    private static final long serialVersionUID = 1999794289;
+    private static final long serialVersionUID = -231862254;
 
     /**
      * The reference instance of <code>CHAT_SAMPLE.ROOM</code>
@@ -69,7 +69,7 @@ public class Room extends TableImpl<RoomRecord> {
     /**
      * The column <code>CHAT_SAMPLE.ROOM.ADMINISTRATOR_ID</code>.
      */
-    public final TableField<RoomRecord, Integer> ADMINISTRATOR_ID = createField("ADMINISTRATOR_ID", org.jooq.impl.SQLDataType.INTEGER.nullable(false), this, "");
+    public final TableField<RoomRecord, Integer> ADMINISTRATOR_ID = createField("ADMINISTRATOR_ID", org.jooq.impl.SQLDataType.INTEGER, this, "");
 
     /**
      * The column <code>CHAT_SAMPLE.ROOM.CREATED_BY_ID</code>.

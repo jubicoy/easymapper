@@ -64,13 +64,7 @@ class ReferenceMappingTest {
                 Room.builder()
                         .setId(1)
                         .setName("#random")
-                        .setAdmin(
-                                User.builder()
-                                        .setId(1)
-                                        .setRole(Role.SUPERADMIN)
-                                        .setName("Antti Admin")
-                                        .build()
-                        )
+                        .setAdmin(null)
                         .setCreatedBy(
                                 User.builder()
                                         .setId(2)

@@ -16,7 +16,7 @@ import fi.jubic.easymapper.generator.def.ValueDef;
 import fi.jubic.easymapper.jooq.Jooq;
 import fi.jubic.easymapper.jooq.JooqFieldAccessor;
 import fi.jubic.easymapper.jooq.JooqReferenceAccessor;
-import fi.jubic.easymapper.jooq.TableMapper;
+import fi.jubic.easymapper.jooq.RecordMapper;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.TableField;
@@ -55,9 +55,9 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
             return Optional.empty();
         }
 
-        String selfName = valueDef.getName() + "TableMapper";
+        String selfName = valueDef.getName() + "RecordMapper";
         TypeName superInterface = ParameterizedTypeName.get(
-                ClassName.get(TableMapper.class),
+                ClassName.get(RecordMapper.class),
                 R,
                 TypeName.get(valueDef.getElement().asType())
         );
@@ -104,7 +104,7 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
         valueDef.getReferences().forEach(
                 reference -> mapperBuilder.addField(
                         FieldSpec.builder(
-                                typeTableMapper(reference.getType()),
+                                typeRecordMapper(reference.getType()),
                                 firstToLower(reference.getName()) + "Mapper",
                                 Modifier.PRIVATE,
                                 Modifier.FINAL
@@ -151,7 +151,7 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
             valueDef.getReferences().forEach(
                     reference -> constructorBuilder
                             .addParameter(
-                                    typeTableMapper(reference.getType()),
+                                    typeRecordMapper(reference.getType()),
                                     firstToLower(reference.getName()) + "Mapper"
                             )
                             .addStatement(
@@ -177,7 +177,7 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                         )
                                 )
                                 .addParameter(
-                                        typeTableMapper(reference.getType()),
+                                        typeRecordMapper(reference.getType()),
                                         firstToLower(reference.getName() + "Mapper")
                                 )
                                 .addStatement(
@@ -288,7 +288,17 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
             callBuilder.add(".build()");
 
             mapperBuilder.addMethod(
-                    mapBuilder.addStatement(callBuilder.build())
+                    mapBuilder
+                            .beginControlFlow(
+                                    "if ($LAccessor.extract(inputRecord) == null)",
+                                    firstToLower(
+                                            valueDef.getId()
+                                                    .orElseThrow(IllegalStateException::new)
+                                                    .getName()
+                                    ))
+                            .addStatement("return null")
+                            .endControlFlow()
+                            .addStatement(callBuilder.build())
                             .build()
             );
         }
@@ -382,7 +392,7 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                         .addAnnotation(Override.class)
                         .returns(
                                 ParameterizedTypeName.get(
-                                        ClassName.get(TableMapper.class),
+                                        ClassName.get(RecordMapper.class),
                                         R,
                                         TypeName.get(valueDef.getElement().asType())
                                 )
@@ -801,9 +811,9 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
         );
     }
 
-    private TypeName typeTableMapper(TypeName mappedType) {
+    private TypeName typeRecordMapper(TypeName mappedType) {
         return ParameterizedTypeName.get(
-                ClassName.get(TableMapper.class),
+                ClassName.get(RecordMapper.class),
                 WildcardTypeName.subtypeOf(Record.class),
                 mappedType
         );

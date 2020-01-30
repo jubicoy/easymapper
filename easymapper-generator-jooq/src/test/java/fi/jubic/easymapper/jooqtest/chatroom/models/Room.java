@@ -4,6 +4,7 @@ import fi.jubic.easymapper.annotations.EasyId;
 import fi.jubic.easymapper.jooqtest.chatroom.db.tables.records.RoomRecord;
 import fi.jubic.easyvalue.EasyValue;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 
@@ -16,6 +17,7 @@ public abstract class Room {
 
     public abstract String getName();
 
+    @Nullable
     public abstract User getAdmin();
 
     public abstract User getCreatedBy();
@@ -36,7 +38,7 @@ public abstract class Room {
 
     }
 
-    public static final RoomTableMapper<RoomRecord> mapper = RoomTableMapper.builder(ROOM)
+    public static final RoomRecordMapper<RoomRecord> mapper = RoomRecordMapper.builder(ROOM)
             .setIdAccessor(ROOM.ID)
             .setNameAccessor(ROOM.NAME)
             .setAdminAccessor(ROOM.ADMINISTRATOR_ID, User::getId)

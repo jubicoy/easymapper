@@ -11,7 +11,7 @@ import java.util.function.Function;
 
 public class JooqReferenceAccessor<R extends Record, ID, T>
         implements FieldWriter<R, T>,
-        ReferenceExtractor<Record, T, TableMapper<R, T>> {
+        ReferenceExtractor<Record, T, RecordMapper<R, T>> {
     private final Function<T, ID> idGetter;
     private final JooqFieldAccessor<R, ID> idAccessor;
 
@@ -34,7 +34,7 @@ public class JooqReferenceAccessor<R extends Record, ID, T>
     }
 
     @Override
-    public T extract(Record input, TableMapper<R, T> mapper) throws MappingException {
+    public T extract(Record input, RecordMapper<R, T> mapper) throws MappingException {
         return mapper.map(input);
     }
 

@@ -88,13 +88,7 @@ public class CollectWithJoinsTest {
                         Room.builder()
                                 .setId(2)
                                 .setName("#general")
-                                .setAdmin(
-                                        User.builder()
-                                                .setId(1)
-                                                .setRole(Role.SUPERADMIN)
-                                                .setName("Antti Admin")
-                                                .build()
-                                )
+                                .setAdmin(null)
                                 .setCreatedBy(
                                         User.builder()
                                                 .setId(3)
@@ -165,7 +159,7 @@ public class CollectWithJoinsTest {
         Room general = Room.builder()
                 .setId(2)
                 .setName("#general")
-                .setAdmin(antti)
+                .setAdmin(null)
                 .setCreatedBy(matias)
                 .setMembers(Arrays.asList(
                         antti.toBuilder().setRooms(Collections.emptyList()).build(),

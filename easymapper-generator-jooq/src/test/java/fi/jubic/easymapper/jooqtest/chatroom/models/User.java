@@ -35,7 +35,7 @@ public abstract class User {
     public static class Builder extends EasyValue_User.Builder {
     }
 
-    public static UserTableMapper<ChatUserRecord> mapper = UserTableMapper.builder(CHAT_USER)
+    public static UserRecordMapper<ChatUserRecord> mapper = UserRecordMapper.builder(CHAT_USER)
             .setIdAccessor(CHAT_USER.ID)
             .setRoleAccessor(CHAT_USER.ROLE, Role::toString, Role::parse)
             .setNameAccessor(CHAT_USER.NAME)

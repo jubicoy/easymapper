@@ -27,7 +27,7 @@ public abstract class Message {
 
     }
 
-    public static final MessageTableMapper<MessageRecord> mapper = MessageTableMapper
+    public static final MessageRecordMapper<MessageRecord> mapper = MessageRecordMapper
             .builder(MESSAGE)
             .setIdAccessor(MESSAGE.ID)
             .setTextAccessor(MESSAGE.TEXT)

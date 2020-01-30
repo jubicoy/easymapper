@@ -5,7 +5,7 @@
     <CHAT_SAMPLE.CHAT_USER id="3" role="USER" name="Matias Messager" deleted="false" />
 
     <CHAT_SAMPLE.ROOM id="1" name="#random" administrator_id="1" created_by_id="2" />
-    <CHAT_SAMPLE.ROOM id="2" name="#general" administrator_id="1" created_by_id="3" />
+    <CHAT_SAMPLE.ROOM id="2" name="#general" administrator_id="[null]" created_by_id="3" />
 
     <CHAT_SAMPLE.ROOM_MEMBERSHIP id="1" room_id="1" user_id="1" />
     <CHAT_SAMPLE.ROOM_MEMBERSHIP id="2" room_id="1" user_id="2" />

@@ -4,7 +4,7 @@ import fi.jubic.easymapper.jooqtest.chatroom.db.tables.ChatUser;
 import fi.jubic.easymapper.jooqtest.chatroom.db.tables.records.ChatUserRecord;
 import fi.jubic.easymapper.jooqtest.chatroom.models.Role;
 import fi.jubic.easymapper.jooqtest.chatroom.models.User;
-import fi.jubic.easymapper.jooqtest.chatroom.models.UserTableMapper;
+import fi.jubic.easymapper.jooqtest.chatroom.models.UserRecordMapper;
 import org.junit.jupiter.api.Test;
 
 import static fi.jubic.easymapper.jooqtest.chatroom.db.tables.ChatUser.CHAT_USER;
@@ -19,7 +19,7 @@ class BasicColumnMappingTest {
         record.set(CHAT_USER.NAME, "Antti Admin");
         record.set(CHAT_USER.DELETED, false);
 
-        UserTableMapper<ChatUserRecord> mapper = UserTableMapper.builder(CHAT_USER)
+        UserRecordMapper<ChatUserRecord> mapper = UserRecordMapper.builder(CHAT_USER)
                 .setIdAccessor(CHAT_USER.ID)
                 .setRoleAccessor(CHAT_USER.ROLE, Role::toString, Role::parse)
                 .setNameAccessor(CHAT_USER.NAME)
@@ -49,7 +49,7 @@ class BasicColumnMappingTest {
         record.set(alias.NAME, "Antti Admin");
         record.set(alias.DELETED, true);
 
-        UserTableMapper<ChatUserRecord> mapper = UserTableMapper.builder(CHAT_USER)
+        UserRecordMapper<ChatUserRecord> mapper = UserRecordMapper.builder(CHAT_USER)
                 .setIdAccessor(CHAT_USER.ID)
                 .setRoleAccessor(CHAT_USER.ROLE, Role::toString, Role::parse)
                 .setNameAccessor(CHAT_USER.NAME)
