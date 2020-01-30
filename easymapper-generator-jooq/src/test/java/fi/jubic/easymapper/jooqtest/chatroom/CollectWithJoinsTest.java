@@ -25,6 +25,7 @@ import static fi.jubic.easymapper.jooqtest.chatroom.db.tables.Room.ROOM;
 import static fi.jubic.easymapper.jooqtest.chatroom.db.tables.RoomMembership.ROOM_MEMBERSHIP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ExtendWith({DBUnitExtension.class})
 @DBUnit(qualifiedTableNames = true)
@@ -44,6 +45,37 @@ public class CollectWithJoinsTest {
     void setup() throws Exception {
         connection = DbUtil.getConnection();
         connectionHolder = () -> connection;
+    }
+
+    @Test
+    @DataSet("chat-sample/datasets/multiple-rooms.xml")
+    void testCollectWithJoinWithoutResults() {
+        fi.jubic.easymapper.jooqtest.chatroom.db.tables.RoomMembership
+                nestedMembership = ROOM_MEMBERSHIP.as("nested_membership");
+        ChatUser member = CHAT_USER.as("member");
+        ChatUser admin = CHAT_USER.as("admin");
+        ChatUser createdBy = CHAT_USER.as("created_by");
+
+        User user = DSL.using(connection)
+                .select()
+                .from(CHAT_USER)
+                .leftJoin(ROOM_MEMBERSHIP).on(ROOM_MEMBERSHIP.USER_ID.eq(CHAT_USER.ID))
+                .leftJoin(ROOM).on(ROOM.ID.eq(ROOM_MEMBERSHIP.ROOM_ID))
+                .leftJoin(nestedMembership).on(nestedMembership.ROOM_ID.eq(ROOM.ID))
+                .leftJoin(member).on(member.ID.eq(nestedMembership.USER_ID))
+                .leftJoin(admin).on(admin.ID.eq(ROOM.ADMINISTRATOR_ID))
+                .leftJoin(createdBy).on(createdBy.ID.eq(ROOM.CREATED_BY_ID))
+                .where(CHAT_USER.ID.eq(100))
+                .fetchStream()
+                .collect(
+                        User.mapper.collectingWithRooms(
+                                Room.mapper.withAdmin(User.mapper.alias(admin))
+                                        .withCreatedBy(User.mapper.alias(createdBy))
+                                        .collectingManyWithMembers(User.mapper.alias(member))
+                        )
+                );
+
+        assertNull(user);
     }
 
     @Test

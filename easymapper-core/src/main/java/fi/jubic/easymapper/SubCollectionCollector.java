@@ -64,10 +64,15 @@ public class SubCollectionCollector<R, T, U, I>
 
     @Override
     public Function<IntermediateSubCollectionResult<T, I>, T> finisher() {
-        return intermediateResult -> finisher.apply(
-                intermediateResult.getIntermediateRoot(),
-                subCollector.finisher().apply(intermediateResult.getSubCollection())
-        );
+        return intermediateResult -> {
+            if (intermediateResult.getIntermediateRoot() == null) {
+                return null;
+            }
+            return finisher.apply(
+                    intermediateResult.getIntermediateRoot(),
+                    subCollector.finisher().apply(intermediateResult.getSubCollection())
+            );
+        };
     }
 
     @Override
