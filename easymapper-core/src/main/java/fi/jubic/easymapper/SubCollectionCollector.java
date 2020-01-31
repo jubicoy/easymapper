@@ -19,7 +19,7 @@ import java.util.stream.Collector;
  * @param <I> Intermediate sub-collection type
  */
 public class SubCollectionCollector<R, T, U, I>
-        implements Collector<R, IntermediateSubCollectionResult<T, I>, T> {
+        implements Collector<R, IntermediateSubCollectionResult<T, I>, Optional<T>> {
 
     private final Mapper<R, T> rootMapper;
     private final Collector<R, I, List<U>> subCollector;
@@ -63,16 +63,12 @@ public class SubCollectionCollector<R, T, U, I>
     }
 
     @Override
-    public Function<IntermediateSubCollectionResult<T, I>, T> finisher() {
-        return intermediateResult -> {
-            if (intermediateResult.getIntermediateRoot() == null) {
-                return null;
-            }
-            return finisher.apply(
-                    intermediateResult.getIntermediateRoot(),
-                    subCollector.finisher().apply(intermediateResult.getSubCollection())
-            );
-        };
+    public Function<IntermediateSubCollectionResult<T, I>, Optional<T>> finisher() {
+        return intermediateResult -> Optional.ofNullable(intermediateResult.getIntermediateRoot())
+                .map(root -> finisher.apply(
+                        root,
+                        subCollector.finisher().apply(intermediateResult.getSubCollection())
+                ));
     }
 
     @Override

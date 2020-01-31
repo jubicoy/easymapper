@@ -6,8 +6,8 @@ import fi.jubic.easymapper.MappingException;
 import org.jooq.Record;
 import org.jooq.Table;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -20,7 +20,7 @@ public interface RecordMapper<R extends Record, T>
     default <ID> Collector<Record, ?, List<T>> partitionAndFlatten(
             JooqFieldAccessor<R, ID> partitionKeyAccessor,
             Table<R> table,
-            Collector<Record, ?, T> collector
+            Collector<Record, ?, Optional<T>> collector
     ) {
         return Collectors.collectingAndThen(
                 Collectors.groupingBy(
@@ -34,7 +34,11 @@ public interface RecordMapper<R extends Record, T>
                         },
                         collector
                 ),
-                map -> new ArrayList<>(map.values())
+                map -> map.values().stream()
+                        .map(optValue -> optValue.orElseThrow(
+                                () -> new IllegalStateException("Parsed empty when collecting many.")
+                        ))
+                        .collect(Collectors.toList())
         );
     }
 

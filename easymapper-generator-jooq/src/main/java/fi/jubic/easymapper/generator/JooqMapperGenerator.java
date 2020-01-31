@@ -317,7 +317,10 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                                     ClassName.get(Collector.class),
                                                     ClassName.get(Record.class),
                                                     WildcardTypeName.subtypeOf(Object.class),
-                                                    TypeName.get(valueDef.getElement().asType())
+                                                    ParameterizedTypeName.get(
+                                                            ClassName.get(Optional.class),
+                                                            TypeName.get(valueDef.getElement().asType())
+                                                    )
                                             )
                                     )
                                     .addParameter(

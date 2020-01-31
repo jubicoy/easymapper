@@ -19,13 +19,14 @@ import java.sql.Connection;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static fi.jubic.easymapper.jooqtest.chatroom.db.tables.ChatUser.CHAT_USER;
 import static fi.jubic.easymapper.jooqtest.chatroom.db.tables.Room.ROOM;
 import static fi.jubic.easymapper.jooqtest.chatroom.db.tables.RoomMembership.ROOM_MEMBERSHIP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 @ExtendWith({DBUnitExtension.class})
 @DBUnit(qualifiedTableNames = true)
@@ -56,7 +57,7 @@ public class CollectWithJoinsTest {
         ChatUser admin = CHAT_USER.as("admin");
         ChatUser createdBy = CHAT_USER.as("created_by");
 
-        User user = DSL.using(connection)
+        Optional<User> optionalUser = DSL.using(connection)
                 .select()
                 .from(CHAT_USER)
                 .leftJoin(ROOM_MEMBERSHIP).on(ROOM_MEMBERSHIP.USER_ID.eq(CHAT_USER.ID))
@@ -75,7 +76,7 @@ public class CollectWithJoinsTest {
                         )
                 );
 
-        assertNull(user);
+        assertFalse(optionalUser.isPresent());
     }
 
     @Test
