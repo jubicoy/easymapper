@@ -6,20 +6,45 @@
 
     <parent>
         <groupId>fi.jubic</groupId>
-        <artifactId>easymapper</artifactId>
-        <version>0.1.0-rc0</version>
+        <artifactId>easymapper-parent</artifactId>
+        <version>0.1.0</version>
     </parent>
 
     <artifactId>easymapper-jooq</artifactId>
-    <version>0.1.0-rc0</version>
+    <version>0.1.0</version>
 
     <name>easymapper-jooq</name>
+    <description>Map JOOQ records to value objects.</description>
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/jubicoy/easymapper</url>
+    </scm>
+    <developers>
+        <developer>
+            <name>Vilppu Vuorinen</name>
+            <email>vilppu.vuorinen@jubic.fi</email>
+        </developer>
+    </developers>
+
+    <distributionManagement>
+        <repository>
+            <id>bintray-jubicoy-maven</id>
+            <name>jubicoy-maven</name>
+            <url>https://api.bintray.com/maven/jubicoy/maven/easymapper-jooq/;publish=1</url>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
         <dependency>
             <groupId>fi.jubic</groupId>
             <artifactId>easymapper-core</artifactId>
-            <version>0.1.0-rc0</version>
+            <version>0.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.jooq</groupId>
