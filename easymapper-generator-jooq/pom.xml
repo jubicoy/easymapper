@@ -6,14 +6,22 @@
 
     <parent>
         <groupId>fi.jubic</groupId>
-        <artifactId>easymapper</artifactId>
-        <version>0.1.0-rc0</version>
+        <artifactId>easymapper-parent</artifactId>
+        <version>0.1.0</version>
     </parent>
 
     <artifactId>easymapper-generator-jooq</artifactId>
-    <version>0.1.0-rc0</version>
+    <version>0.1.0</version>
 
     <name>easymapper-generator-jooq</name>
+
+    <distributionManagement>
+        <repository>
+            <id>bintray-jubicoy-maven</id>
+            <name>jubicoy-maven</name>
+            <url>https://api.bintray.com/maven/jubicoy/maven/easymapper-generator-jooq/;publish=1</url>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
         <dependency>
@@ -27,12 +35,12 @@
         <dependency>
             <groupId>fi.jubic</groupId>
             <artifactId>easymapper-jooq</artifactId>
-            <version>0.1.0-rc0</version>
+            <version>0.1.0</version>
         </dependency>
         <dependency>
             <groupId>fi.jubic</groupId>
             <artifactId>easymapper-generator-core</artifactId>
-            <version>0.1.0-rc0</version>
+            <version>0.1.0</version>
         </dependency>
 
         <dependency>

@@ -5,15 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fi.jubic</groupId>
-    <artifactId>easymapper</artifactId>
-    <version>0.1.0-rc0</version>
+    <artifactId>easymapper-parent</artifactId>
+    <version>0.1.0</version>
     <packaging>pom</packaging>
 
     <distributionManagement>
         <repository>
             <id>bintray-jubicoy-maven</id>
             <name>jubicoy-maven</name>
-            <url>https://api.bintray.com/maven/jubicoy/maven/easymapper/;publish=1</url>
+            <url>https://api.bintray.com/maven/jubicoy/maven/easymapper-parent/;publish=1</url>
         </repository>
     </distributionManagement>
 
