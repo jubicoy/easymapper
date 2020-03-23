@@ -16,6 +16,7 @@ import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -47,9 +48,12 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
         roundEnvironment
-                .getElementsAnnotatedWith(EasyValue.class)
+                .getElementsAnnotatedWith(EasyId.class)
                 .stream()
+                .filter(element -> element.getKind() == ElementKind.METHOD)
+                .map(Element::getEnclosingElement)
                 .filter(element -> element.getKind() == ElementKind.CLASS)
+                .filter(element -> !element.getSimpleName().toString().equals("Builder"))
                 .map(element -> (TypeElement) element)
                 .map(element -> parseDef(element, roundEnvironment))
                 .forEach(def -> generate(def, messager, roundEnvironment)

@@ -35,10 +35,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @AutoService(Processor.class)
-@SupportedAnnotationTypes({
-        "fi.jubic.easyvalue.EasyValue",
-        "fi.jubic.easymapper.annotations.EasyId"
-})
+@SupportedAnnotationTypes({"fi.jubic.easymapper.annotations.EasyId"})
 public class JooqMapperGenerator extends AbstractMapperGenerator {
     private static TypeVariableName R = TypeVariableName.get("R");
 
