@@ -96,7 +96,7 @@ public class CollectWithJoinsTest {
                                 .withCreatedBy(User.mapper.alias(createdBy))
                 );
 
-        assertEquals(2, rooms.size());
+        assertEquals(3, rooms.size());
         assertIterableEquals(
                 Arrays.asList(
                         // region
@@ -121,6 +121,18 @@ public class CollectWithJoinsTest {
                         Room.builder()
                                 .setId(2)
                                 .setName("#general")
+                                .setAdmin(null)
+                                .setCreatedBy(
+                                        User.builder()
+                                                .setId(3)
+                                                .setRole(Role.USER)
+                                                .setName("Matias Messager")
+                                                .build()
+                                )
+                                .build(),
+                        Room.builder()
+                                .setId(3)
+                                .setName("#empty")
                                 .setAdmin(null)
                                 .setCreatedBy(
                                         User.builder()
@@ -215,6 +227,78 @@ public class CollectWithJoinsTest {
                 ),
                 // endregion
                 users
+        );
+    }
+
+    @Test
+    @DataSet("chat-sample/datasets/multiple-rooms.xml")
+    void testCollectWithEmptyCollection() {
+        ChatUser admin = CHAT_USER.as("admin");
+        ChatUser createdBy = CHAT_USER.as("created_by");
+
+        List<Room> rooms = DSL.using(connection)
+                .select()
+                .from(ROOM)
+                .leftJoin(admin).on(admin.ID.eq(ROOM.ADMINISTRATOR_ID))
+                .leftJoin(createdBy).on(createdBy.ID.eq(ROOM.CREATED_BY_ID))
+                .leftJoin(ROOM_MEMBERSHIP).on(ROOM_MEMBERSHIP.ROOM_ID.eq(ROOM.ID))
+                .leftJoin(CHAT_USER).on(CHAT_USER.ID.eq(ROOM_MEMBERSHIP.USER_ID))
+                .fetchStream()
+                .collect(
+                        Room.mapper.withCreatedBy(User.mapper.alias(createdBy))
+                                .withAdmin(User.mapper.alias(admin))
+                                .collectingManyWithMembers(User.mapper)
+                );
+
+        User antti = User.builder()
+                .setId(1)
+                .setRole(Role.SUPERADMIN)
+                .setName("Antti Admin")
+                .build();
+        User unto = User.builder()
+                .setId(2)
+                .setRole(Role.USER)
+                .setName("Unto User")
+                .build();
+        User matias = User.builder()
+                .setId(3)
+                .setRole(Role.USER)
+                .setName("Matias Messager")
+                .build();
+
+        assertIterableEquals(
+                // region
+                Arrays.asList(
+                        Room.builder()
+                                .setId(1)
+                                .setName("#random")
+                                .setAdmin(antti)
+                                .setCreatedBy(unto)
+                                .setMembers(Arrays.asList(
+                                        antti.toBuilder().setRooms(Collections.emptyList()).build(),
+                                        unto.toBuilder().setRooms(Collections.emptyList()).build()
+                                ))
+                                .build(),
+                        Room.builder()
+                                .setId(2)
+                                .setName("#general")
+                                .setAdmin(null)
+                                .setCreatedBy(matias)
+                                .setMembers(Arrays.asList(
+                                        antti.toBuilder().setRooms(Collections.emptyList()).build(),
+                                        matias.toBuilder().setRooms(Collections.emptyList()).build()
+                                ))
+                                .build(),
+                        Room.builder()
+                                .setId(3)
+                                .setName("#empty")
+                                .setAdmin(null)
+                                .setCreatedBy(matias)
+                                .setMembers(Collections.emptyList())
+                                .build()
+                ),
+                // endregion
+                rooms
         );
     }
 }
