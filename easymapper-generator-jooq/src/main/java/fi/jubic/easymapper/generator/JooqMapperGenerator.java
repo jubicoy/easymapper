@@ -392,9 +392,8 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                         .addAnnotation(Override.class)
                         .returns(
                                 ParameterizedTypeName.get(
-                                        ClassName.get(RecordMapper.class),
-                                        R,
-                                        TypeName.get(valueDef.getElement().asType())
+                                        ClassName.bestGuess(selfName),
+                                        R
                                 )
                         )
                         .addParameter(
