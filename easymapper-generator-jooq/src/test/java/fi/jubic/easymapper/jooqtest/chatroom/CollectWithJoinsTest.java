@@ -99,50 +99,9 @@ public class CollectWithJoinsTest {
         assertEquals(3, rooms.size());
         assertIterableEquals(
                 Arrays.asList(
-                        // region
-                        Room.builder()
-                                .setId(1)
-                                .setName("#random")
-                                .setAdmin(
-                                        User.builder()
-                                                .setId(1)
-                                                .setRole(Role.SUPERADMIN)
-                                                .setName("Antti Admin")
-                                                .build()
-                                )
-                                .setCreatedBy(
-                                        User.builder()
-                                                .setId(2)
-                                                .setRole(Role.USER)
-                                                .setName("Unto User")
-                                                .build()
-                                )
-                                .build(),
-                        Room.builder()
-                                .setId(2)
-                                .setName("#general")
-                                .setAdmin(null)
-                                .setCreatedBy(
-                                        User.builder()
-                                                .setId(3)
-                                                .setRole(Role.USER)
-                                                .setName("Matias Messager")
-                                                .build()
-                                )
-                                .build(),
-                        Room.builder()
-                                .setId(3)
-                                .setName("#empty")
-                                .setAdmin(null)
-                                .setCreatedBy(
-                                        User.builder()
-                                                .setId(3)
-                                                .setRole(Role.USER)
-                                                .setName("Matias Messager")
-                                                .build()
-                                )
-                                .build()
-                        // endregion
+                        random,
+                        general,
+                        empty
                 ),
                 rooms
         );
@@ -175,37 +134,13 @@ public class CollectWithJoinsTest {
                         )
                 );
 
-        User antti = User.builder()
-                .setId(1)
-                .setRole(Role.SUPERADMIN)
-                .setName("Antti Admin")
-                .build();
-        User unto = User.builder()
-                .setId(2)
-                .setRole(Role.USER)
-                .setName("Unto User")
-                .build();
-        User matias = User.builder()
-                .setId(3)
-                .setRole(Role.USER)
-                .setName("Matias Messager")
-                .build();
-
-        Room random = Room.builder()
-                .setId(1)
-                .setName("#random")
-                .setAdmin(antti)
-                .setCreatedBy(unto)
+        Room randomWithMembers = random.toBuilder()
                 .setMembers(Arrays.asList(
                         antti.toBuilder().setRooms(Collections.emptyList()).build(),
                         unto.toBuilder().setRooms(Collections.emptyList()).build()
                 ))
                 .build();
-        Room general = Room.builder()
-                .setId(2)
-                .setName("#general")
-                .setAdmin(null)
-                .setCreatedBy(matias)
+        Room generalWithMembers = general.toBuilder()
                 .setMembers(Arrays.asList(
                         antti.toBuilder().setRooms(Collections.emptyList()).build(),
                         matias.toBuilder().setRooms(Collections.emptyList()).build()
@@ -213,19 +148,17 @@ public class CollectWithJoinsTest {
                 .build();
 
         assertIterableEquals(
-                // region
                 Arrays.asList(
                         antti.toBuilder()
-                                .setRooms(Arrays.asList(random, general))
+                                .setRooms(Arrays.asList(randomWithMembers, generalWithMembers))
                                 .build(),
                         unto.toBuilder()
-                                .setRooms(Collections.singletonList(random))
+                                .setRooms(Collections.singletonList(randomWithMembers))
                                 .build(),
                         matias.toBuilder()
-                                .setRooms(Collections.singletonList(general))
+                                .setRooms(Collections.singletonList(generalWithMembers))
                                 .build()
                 ),
-                // endregion
                 users
         );
     }
@@ -250,50 +183,22 @@ public class CollectWithJoinsTest {
                                 .collectingManyWithMembers(User.mapper)
                 );
 
-        User antti = User.builder()
-                .setId(1)
-                .setRole(Role.SUPERADMIN)
-                .setName("Antti Admin")
-                .build();
-        User unto = User.builder()
-                .setId(2)
-                .setRole(Role.USER)
-                .setName("Unto User")
-                .build();
-        User matias = User.builder()
-                .setId(3)
-                .setRole(Role.USER)
-                .setName("Matias Messager")
-                .build();
-
         assertIterableEquals(
                 // region
                 Arrays.asList(
-                        Room.builder()
-                                .setId(1)
-                                .setName("#random")
-                                .setAdmin(antti)
-                                .setCreatedBy(unto)
+                        random.toBuilder()
                                 .setMembers(Arrays.asList(
                                         antti.toBuilder().setRooms(Collections.emptyList()).build(),
                                         unto.toBuilder().setRooms(Collections.emptyList()).build()
                                 ))
                                 .build(),
-                        Room.builder()
-                                .setId(2)
-                                .setName("#general")
-                                .setAdmin(null)
-                                .setCreatedBy(matias)
+                        general.toBuilder()
                                 .setMembers(Arrays.asList(
                                         antti.toBuilder().setRooms(Collections.emptyList()).build(),
                                         matias.toBuilder().setRooms(Collections.emptyList()).build()
                                 ))
                                 .build(),
-                        Room.builder()
-                                .setId(3)
-                                .setName("#empty")
-                                .setAdmin(null)
-                                .setCreatedBy(matias)
+                        empty.toBuilder()
                                 .setMembers(Collections.emptyList())
                                 .build()
                 ),
@@ -301,4 +206,152 @@ public class CollectWithJoinsTest {
                 rooms
         );
     }
+
+    @Test
+    @DataSet("chat-sample/datasets/multiple-rooms.xml")
+    void testCollectWithReference() {
+        ChatUser admin = CHAT_USER.as("admin");
+        ChatUser createdBy = CHAT_USER.as("created_by");
+
+        fi.jubic.easymapper.jooqtest.chatroom.db.tables.Room nestedRoom = ROOM.as("nested_room");
+        ChatUser nestedAdmin = CHAT_USER.as("nested_admin");
+        ChatUser nestedCreatedBy = CHAT_USER.as("nested_created_by");
+
+        Room room = DSL.using(connection)
+                .select()
+                .from(ROOM)
+                .leftJoin(admin).on(admin.ID.eq(ROOM.ADMINISTRATOR_ID))
+                .leftJoin(createdBy).on(createdBy.ID.eq(ROOM.CREATED_BY_ID))
+                .leftJoin(ROOM_MEMBERSHIP).on(ROOM_MEMBERSHIP.USER_ID.eq(admin.ID))
+                .leftJoin(nestedRoom).on(nestedRoom.ID.eq(ROOM_MEMBERSHIP.ROOM_ID))
+                .leftJoin(nestedAdmin).on(nestedAdmin.ID.eq(nestedRoom.ADMINISTRATOR_ID))
+                .leftJoin(nestedCreatedBy).on(nestedCreatedBy.ID.eq(nestedRoom.CREATED_BY_ID))
+                .where(ROOM.ID.eq(1))
+                .fetchStream()
+                .collect(
+                        Room.mapper.withCreatedBy(User.mapper.alias(createdBy))
+                                .collectingWithAdmin(
+                                        User.mapper.alias(admin)
+                                                .collectingWithRooms(
+                                                        Room.mapper.alias(nestedRoom)
+                                                                .withAdmin(User.mapper.alias(nestedAdmin))
+                                                                .withCreatedBy(User.mapper.alias(nestedCreatedBy))
+                                                )
+                                )
+                )
+                .orElseThrow(IllegalStateException::new);
+
+        assertEquals(
+                random.toBuilder()
+                        .setAdmin(
+                                antti.toBuilder()
+                                        .setRooms(
+                                                Arrays.asList(
+                                                        random,
+                                                        general
+                                                )
+                                        )
+                                        .build()
+                        )
+                        .setMembers(Collections.emptyList())
+                        .build(),
+                room
+        );
+    }
+
+    @Test
+    @DataSet("chat-sample/datasets/multiple-rooms.xml")
+    void testCollectManyWithReference() {
+        ChatUser admin = CHAT_USER.as("admin");
+        ChatUser createdBy = CHAT_USER.as("created_by");
+
+        fi.jubic.easymapper.jooqtest.chatroom.db.tables.Room nestedRoom = ROOM.as("nested_room");
+        ChatUser nestedAdmin = CHAT_USER.as("nested_admin");
+        ChatUser nestedCreatedBy = CHAT_USER.as("nested_created_by");
+
+        List<Room> rooms = DSL.using(connection)
+                .select()
+                .from(ROOM)
+                .leftJoin(admin).on(admin.ID.eq(ROOM.ADMINISTRATOR_ID))
+                .leftJoin(createdBy).on(createdBy.ID.eq(ROOM.CREATED_BY_ID))
+                .leftJoin(ROOM_MEMBERSHIP).on(ROOM_MEMBERSHIP.USER_ID.eq(admin.ID))
+                .leftJoin(nestedRoom).on(nestedRoom.ID.eq(ROOM_MEMBERSHIP.ROOM_ID))
+                .leftJoin(nestedAdmin).on(nestedAdmin.ID.eq(nestedRoom.ADMINISTRATOR_ID))
+                .leftJoin(nestedCreatedBy).on(nestedCreatedBy.ID.eq(nestedRoom.CREATED_BY_ID))
+                .fetchStream()
+                .collect(
+                        Room.mapper.withCreatedBy(User.mapper.alias(createdBy))
+                                .collectingManyWithAdmin(
+                                        User.mapper.alias(admin)
+                                                .collectingWithRooms(
+                                                        Room.mapper.alias(nestedRoom)
+                                                                .withAdmin(User.mapper.alias(nestedAdmin))
+                                                                .withCreatedBy(User.mapper.alias(nestedCreatedBy))
+                                                )
+                                )
+                );
+
+        assertEquals(
+                Arrays.asList(
+                        random.toBuilder()
+                                .setAdmin(
+                                        antti.toBuilder()
+                                                .setRooms(
+                                                        Arrays.asList(
+                                                                random,
+                                                                general
+                                                        )
+                                                )
+                                                .build()
+                                )
+                                .build(),
+                        general,
+                        empty.toBuilder()
+                                .setAdmin(
+                                        unto.toBuilder()
+                                                .setRooms(
+                                                        Collections.singletonList(random)
+                                                )
+                                                .build()
+                                )
+                                .build()
+                ),
+                rooms
+        );
+    }
+
+    private static final User antti = User.builder()
+            .setId(1)
+            .setRole(Role.SUPERADMIN)
+            .setName("Antti Admin")
+            .build();
+    private static final User unto = User.builder()
+            .setId(2)
+            .setRole(Role.USER)
+            .setName("Unto User")
+            .build();
+    private static final User matias = User.builder()
+            .setId(3)
+            .setRole(Role.USER)
+            .setName("Matias Messager")
+            .build();
+
+    private static final Room random = Room.builder()
+            .setId(1)
+            .setName("#random")
+            .setAdmin(antti)
+            .setCreatedBy(unto)
+            .build();
+    private static final Room general = Room.builder()
+            .setId(2)
+            .setName("#general")
+            .setAdmin(null)
+            .setCreatedBy(matias)
+            .build();
+    private static final Room empty = Room.builder()
+            .setId(3)
+            .setName("#empty")
+            .setAdmin(unto)
+            .setCreatedBy(matias)
+            .build();
 }

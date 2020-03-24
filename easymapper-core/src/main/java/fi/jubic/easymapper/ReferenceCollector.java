@@ -1,7 +1,6 @@
 package fi.jubic.easymapper;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -15,20 +14,20 @@ import java.util.stream.Collector;
  *
  * @param <R> Source record
  * @param <T> Output type
- * @param <U> Sub-collection type
- * @param <I> Intermediate sub-collection type
+ * @param <U> Reference collection type
+ * @param <I> Intermediate reference collection type
  */
-public class SubCollectionCollector<R, T, U, I>
+public class ReferenceCollector<R, T, U, I>
         implements Collector<R, IntermediateSubCollectionResult<T, I>, Optional<T>> {
 
     private final Mapper<R, T> rootMapper;
-    private final Collector<R, I, List<U>> subCollector;
-    private final BiFunction<T, List<U>, T> finisher;
+    private final Collector<R, I, U> subCollector;
+    private final BiFunction<T, U, T> finisher;
 
-    public SubCollectionCollector(
+    public ReferenceCollector(
             Mapper<R, T> rootMapper,
-            Collector<R, I, List<U>> subCollector,
-            BiFunction<T, List<U>, T> finisher
+            Collector<R, I, U> subCollector,
+            BiFunction<T, U, T> finisher
     ) {
         this.rootMapper = rootMapper;
         this.subCollector = subCollector;

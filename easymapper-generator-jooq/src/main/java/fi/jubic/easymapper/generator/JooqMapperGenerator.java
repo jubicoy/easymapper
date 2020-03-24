@@ -10,7 +10,7 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
 import com.squareup.javapoet.WildcardTypeName;
-import fi.jubic.easymapper.SubCollectionCollector;
+import fi.jubic.easymapper.ReferenceCollector;
 import fi.jubic.easymapper.generator.def.PropertyDef;
 import fi.jubic.easymapper.generator.def.ValueDef;
 import fi.jubic.easymapper.jooq.Jooq;
@@ -301,9 +301,60 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
         }
         // endregion Mapper::map
 
-        // region collectingWith
         {
             TypeVariableName I = TypeVariableName.get("I");
+
+            // region collectinWith reference
+            valueDef.getReferences().forEach(
+                    reference -> mapperBuilder.addMethod(
+                            MethodSpec.methodBuilder("collectingWith" + firstToUpper(reference.getName()))
+                                    .addModifiers(Modifier.PUBLIC)
+                                    .addTypeVariable(I)
+                                    .returns(
+                                            ParameterizedTypeName.get(
+                                                    ClassName.get(Collector.class),
+                                                    ClassName.get(Record.class),
+                                                    WildcardTypeName.subtypeOf(Object.class),
+                                                    ParameterizedTypeName.get(
+                                                            ClassName.get(Optional.class),
+                                                            TypeName.get(valueDef.getElement().asType())
+                                                    )
+                                            )
+                                    )
+                                    .addParameter(
+                                            ParameterizedTypeName.get(
+                                                    ClassName.get(Collector.class),
+                                                    ClassName.get(Record.class),
+                                                    WildcardTypeName.subtypeOf(Object.class),
+                                                    ParameterizedTypeName.get(
+                                                            ClassName.get(Optional.class),
+                                                            reference.getType()
+                                                    )
+                                            ),
+                                            "collector"
+                                    )
+                                    .addStatement(
+                                            "return new $T<>(" +
+                                                    "this," +
+                                                    "collector," +
+                                                    "($L, $L) -> $L.isPresent() " +
+                                                    "? $L.toBuilder().set$L($L.get()).build() " +
+                                                    ": $L)",
+                                            ReferenceCollector.class,
+                                            firstToLower(valueDef.getName()),
+                                            firstToLower(reference.getName()),
+                                            firstToLower(reference.getName()),
+                                            firstToLower(valueDef.getName()),
+                                            firstToUpper(reference.getName()),
+                                            firstToLower(reference.getName()),
+                                            firstToLower(valueDef.getName())
+                                    )
+                                    .build()
+                    )
+            );
+            // endregion collectingWith reference
+
+            // region collectingWith collection
             valueDef.getCollectionReferences().forEach(
                     reference -> mapperBuilder.addMethod(
                             MethodSpec.methodBuilder("collectingWith" + firstToUpper(reference.getName()))
@@ -334,7 +385,7 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                                     "this," +
                                                     "collector," +
                                                     "($L, $L) -> $L.toBuilder().set$L($L).build())",
-                                            SubCollectionCollector.class,
+                                            ReferenceCollector.class,
                                             firstToLower(valueDef.getName()),
                                             firstToLower(reference.getName()),
                                             firstToLower(valueDef.getName()),
@@ -344,9 +395,50 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                     .build()
                     )
             );
-            // endregion collectingWith
+            // endregion collectingWith collection
 
-            // region collectingManyWith
+            // region collectingManyWith reference
+            valueDef.getReferences().forEach(
+                    reference -> mapperBuilder.addMethod(
+                            MethodSpec.methodBuilder("collectingManyWith" + firstToUpper(reference.getName()))
+                                    .addModifiers(Modifier.PUBLIC)
+                                    .addTypeVariable(I)
+                                    .returns(
+                                            ParameterizedTypeName.get(
+                                                    ClassName.get(Collector.class),
+                                                    ClassName.get(Record.class),
+                                                    WildcardTypeName.subtypeOf(Object.class),
+                                                    ParameterizedTypeName.get(
+                                                            ClassName.get(List.class),
+                                                            TypeName.get(valueDef.getElement().asType())
+                                                    )
+                                            )
+                                    )
+                                    .addParameter(
+                                            ParameterizedTypeName.get(
+                                                    ClassName.get(Collector.class),
+                                                    ClassName.get(Record.class),
+                                                    WildcardTypeName.subtypeOf(Object.class),
+                                                    ParameterizedTypeName.get(
+                                                            ClassName.get(Optional.class),
+                                                            reference.getType()
+                                                    )
+                                            ),
+                                            "collector"
+                                    )
+                                    .addStatement(
+                                            "return partitionAndFlatten($LAccessor, table, collectingWith$L(collector))",
+                                            valueDef.getId()
+                                                    .map(id -> firstToLower(id.getName()))
+                                                    .orElseThrow(() -> new IllegalStateException("Cannot collect without an ID")),
+                                            firstToUpper(reference.getName())
+                                    )
+                                    .build()
+                    )
+            );
+            // endregion collectingManyWith reference
+
+            // region collectingManyWith collection
             valueDef.getCollectionReferences().forEach(
                     reference -> mapperBuilder.addMethod(
                             MethodSpec.methodBuilder("collectingManyWith" + firstToUpper(reference.getName()))
@@ -382,8 +474,8 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                     .build()
                     )
             );
+            // endregion collectingManyWith collection
         }
-        // endregion collectingManyWith
 
         // region alias
         mapperBuilder.addMethod(
