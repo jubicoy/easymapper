@@ -8,15 +8,16 @@ import org.jooq.TableField;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class TransformingJooqFieldAccessor<R extends Record, F, FF> implements JooqFieldAccessor<R, F> {
-    private final TableField<R, FF> field;
-    private final Function<F, FF> writeTransform;
-    private final Function<FF, F> extractTransform;
+public class TransformingJooqFieldAccessor<R extends Record, F, FieldT>
+        implements JooqFieldAccessor<R, F> {
+    private final TableField<R, FieldT> field;
+    private final Function<F, FieldT> writeTransform;
+    private final Function<FieldT, F> extractTransform;
 
     public TransformingJooqFieldAccessor(
-            TableField<R, FF> field,
-            Function<F, FF> writeTransform,
-            Function<FF, F> extractTransform
+            TableField<R, FieldT> field,
+            Function<F, FieldT> writeTransform,
+            Function<FieldT, F> extractTransform
     ) {
         this.field = field;
         this.writeTransform = writeTransform;
@@ -44,7 +45,7 @@ public class TransformingJooqFieldAccessor<R extends Record, F, FF> implements J
     @Override
     public JooqFieldAccessor<R, F> alias(Table<R> tableAlias) {
         return new TransformingJooqFieldAccessor<>(
-                (TableField<R, FF>) tableAlias.field(field.getName(), field.getDataType()),
+                (TableField<R, FieldT>) tableAlias.field(field.getName(), field.getDataType()),
                 writeTransform,
                 extractTransform
         );

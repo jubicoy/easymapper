@@ -6,8 +6,10 @@ import com.github.database.rider.core.api.dataset.DataSet;
 import com.github.database.rider.junit5.DBUnitExtension;
 import fi.jubic.easymapper.jooqtest.DbUtil;
 import fi.jubic.easymapper.jooqtest.chatroom.db.tables.ChatUser;
+import fi.jubic.easymapper.jooqtest.chatroom.db.tables.records.RoomRecord;
 import fi.jubic.easymapper.jooqtest.chatroom.models.Role;
 import fi.jubic.easymapper.jooqtest.chatroom.models.Room;
+import fi.jubic.easymapper.jooqtest.chatroom.models.RoomRecordMapper;
 import fi.jubic.easymapper.jooqtest.chatroom.models.User;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.BeforeAll;
@@ -217,6 +219,10 @@ public class CollectWithJoinsTest {
         ChatUser nestedAdmin = CHAT_USER.as("nested_admin");
         ChatUser nestedCreatedBy = CHAT_USER.as("nested_created_by");
 
+        RoomRecordMapper<RoomRecord> nestedRoomMapper = Room.mapper.alias(nestedRoom)
+                .withAdmin(User.mapper.alias(nestedAdmin))
+                .withCreatedBy(User.mapper.alias(nestedCreatedBy));
+
         Room room = DSL.using(connection)
                 .select()
                 .from(ROOM)
@@ -232,11 +238,7 @@ public class CollectWithJoinsTest {
                         Room.mapper.withCreatedBy(User.mapper.alias(createdBy))
                                 .collectingWithAdmin(
                                         User.mapper.alias(admin)
-                                                .collectingWithRooms(
-                                                        Room.mapper.alias(nestedRoom)
-                                                                .withAdmin(User.mapper.alias(nestedAdmin))
-                                                                .withCreatedBy(User.mapper.alias(nestedCreatedBy))
-                                                )
+                                                .collectingWithRooms(nestedRoomMapper)
                                 )
                 )
                 .orElseThrow(IllegalStateException::new);
@@ -269,6 +271,10 @@ public class CollectWithJoinsTest {
         ChatUser nestedAdmin = CHAT_USER.as("nested_admin");
         ChatUser nestedCreatedBy = CHAT_USER.as("nested_created_by");
 
+        RoomRecordMapper<RoomRecord> nestedRoomMapper = Room.mapper.alias(nestedRoom)
+                .withAdmin(User.mapper.alias(nestedAdmin))
+                .withCreatedBy(User.mapper.alias(nestedCreatedBy));
+
         List<Room> rooms = DSL.using(connection)
                 .select()
                 .from(ROOM)
@@ -283,11 +289,7 @@ public class CollectWithJoinsTest {
                         Room.mapper.withCreatedBy(User.mapper.alias(createdBy))
                                 .collectingManyWithAdmin(
                                         User.mapper.alias(admin)
-                                                .collectingWithRooms(
-                                                        Room.mapper.alias(nestedRoom)
-                                                                .withAdmin(User.mapper.alias(nestedAdmin))
-                                                                .withCreatedBy(User.mapper.alias(nestedCreatedBy))
-                                                )
+                                                .collectingWithRooms(nestedRoomMapper)
                                 )
                 );
 

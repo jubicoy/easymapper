@@ -47,7 +47,11 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
     );
 
     @Override
-    public Optional<TypeSpec> generate(ValueDef valueDef, Messager messager, RoundEnvironment roundEnvironment) {
+    public Optional<TypeSpec> generate(
+            ValueDef valueDef,
+            Messager messager,
+            RoundEnvironment roundEnvironment
+    ) {
         if (!valueDef.getId().isPresent()) {
             return Optional.empty();
         }
@@ -163,42 +167,53 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
         // endregion Constructor
 
         // region Reference withers
-        valueDef.getReferences().forEach(
-                reference -> mapperBuilder.addMethod(
-                        MethodSpec.methodBuilder("with" + firstToUpper(reference.getName()))
-                                .addModifiers(Modifier.PUBLIC)
-                                .returns(
-                                        ParameterizedTypeName.get(
-                                                ClassName.bestGuess(selfName),
-                                                R
-                                        )
-                                )
-                                .addParameter(
-                                        typeRecordMapper(reference.getType()),
-                                        firstToLower(reference.getName() + "Mapper")
-                                )
-                                .addStatement(
-                                        "return new $N<>(this.$L, $N)",
-                                        selfName,
-                                        FIELD_NAME_TABLE,
-                                        Stream.of(
-                                                valueDef.getProperties().stream()
-                                                        .map(prop -> "this." + firstToLower(prop.getName() + "Accessor")),
-                                                valueDef.getReferences().stream()
-                                                        .map(ref -> "this." + firstToLower(ref.getName() + "Accessor")),
-                                                valueDef.getReferences().stream()
-                                                        .map(ref -> {
-                                                            if (ref.getName().equals(reference.getName())) {
-                                                                return firstToLower(ref.getName() + "Mapper");
-                                                            }
-                                                            return "this." + firstToLower(ref.getName() + "Mapper");
-                                                        })
-                                        )
-                                                .flatMap(Function.identity())
-                                                .collect(Collectors.joining(", "))
-                                )
-                                .build()
-                )
+        valueDef.getReferences().forEach(reference -> {
+            String valueParams = Stream.of(
+                    valueDef.getProperties().stream()
+                            .map(prop -> "this."
+                                            + firstToLower(
+                                    prop.getName() + "Accessor"
+                                    )
+                            ),
+                    valueDef.getReferences().stream()
+                            .map(ref -> "this."
+                                            + firstToLower(
+                                    ref.getName() + "Accessor"
+                                    )
+                            ),
+                    valueDef.getReferences().stream()
+                            .map(ref -> {
+                                if (ref.getName().equals(reference.getName())) {
+                                    return firstToLower(ref.getName() + "Mapper");
+                                }
+                                return "this." + firstToLower(ref.getName() + "Mapper");
+                            })
+            )
+                    .flatMap(Function.identity())
+                    .collect(Collectors.joining(", "));
+
+                    mapperBuilder.addMethod(
+                            MethodSpec.methodBuilder("with" + firstToUpper(reference.getName()))
+                                    .addModifiers(Modifier.PUBLIC)
+                                    .returns(
+                                            ParameterizedTypeName.get(
+                                                    ClassName.bestGuess(selfName),
+                                                    R
+                                            )
+                                    )
+                                    .addParameter(
+                                            typeRecordMapper(reference.getType()),
+                                            firstToLower(reference.getName() + "Mapper")
+                                    )
+                                    .addStatement(
+                                            "return new $N<>(this.$L, $N)",
+                                            selfName,
+                                            FIELD_NAME_TABLE,
+                                            valueParams
+                                    )
+                                    .build()
+                    );
+                }
         );
         // endregion Reference withers
 
@@ -244,20 +259,6 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
 
         // region Mapper::map
         {
-            MethodSpec.Builder mapBuilder = MethodSpec.methodBuilder("map")
-                    .addModifiers(Modifier.PUBLIC)
-                    .addAnnotation(Override.class)
-                    .returns(TypeName.get(valueDef.getElement().asType()))
-                    .addParameter(
-                            ClassName.get(Record.class),
-                            "input"
-                    )
-                    .addStatement(
-                            "$T inputRecord = input.into($N)",
-                            R,
-                            FIELD_NAME_TABLE
-                    );
-
             CodeBlock.Builder callBuilder = CodeBlock.builder()
                     .add(
                             "return $T.builder()",
@@ -272,17 +273,31 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
             );
             valueDef.getReferences().forEach(
                     reference -> callBuilder.add(
-                            ".set$L(" +
-                                    "$T.ofNullable($LMapper)" +
-                                    ".map(mapper -> mapper.map(input))" +
-                                    ".orElse(null)" +
-                                    ")",
+                            ".set$L("
+                                    + "$T.ofNullable($LMapper)"
+                                    + ".map(mapper -> mapper.map(input))"
+                                    + ".orElse(null)"
+                                    + ")",
                             firstToUpper(reference.getName()),
                             Optional.class,
                             firstToLower(reference.getName())
                     )
             );
             callBuilder.add(".build()");
+
+            MethodSpec.Builder mapBuilder = MethodSpec.methodBuilder("map")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addAnnotation(Override.class)
+                    .returns(TypeName.get(valueDef.getElement().asType()))
+                    .addParameter(
+                            ClassName.get(Record.class),
+                            "input"
+                    )
+                    .addStatement(
+                            "$T inputRecord = input.into($N)",
+                            R,
+                            FIELD_NAME_TABLE
+                    );
 
             mapperBuilder.addMethod(
                     mapBuilder
@@ -302,14 +317,18 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
         // endregion Mapper::map
 
         {
-            TypeVariableName I = TypeVariableName.get("I");
+            TypeVariableName varI = TypeVariableName.get("I");
 
             // region collectinWith reference
             valueDef.getReferences().forEach(
                     reference -> mapperBuilder.addMethod(
-                            MethodSpec.methodBuilder("collectingWith" + firstToUpper(reference.getName()))
+                            MethodSpec
+                                    .methodBuilder(
+                                            "collectingWith"
+                                                    + firstToUpper(reference.getName())
+                                    )
                                     .addModifiers(Modifier.PUBLIC)
-                                    .addTypeVariable(I)
+                                    .addTypeVariable(varI)
                                     .returns(
                                             ParameterizedTypeName.get(
                                                     ClassName.get(Collector.class),
@@ -317,7 +336,9 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                                     WildcardTypeName.subtypeOf(Object.class),
                                                     ParameterizedTypeName.get(
                                                             ClassName.get(Optional.class),
-                                                            TypeName.get(valueDef.getElement().asType())
+                                                            TypeName.get(
+                                                                    valueDef.getElement().asType()
+                                                            )
                                                     )
                                             )
                                     )
@@ -334,12 +355,12 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                             "collector"
                                     )
                                     .addStatement(
-                                            "return new $T<>(" +
-                                                    "this," +
-                                                    "collector," +
-                                                    "($L, $L) -> $L.isPresent() " +
-                                                    "? $L.toBuilder().set$L($L.get()).build() " +
-                                                    ": $L)",
+                                            "return new $T<>("
+                                                    + "this,"
+                                                    + "collector,"
+                                                    + "($L, $L) -> $L.isPresent() "
+                                                    + "? $L.toBuilder().set$L($L.get()).build() "
+                                                    + ": $L)",
                                             ReferenceCollector.class,
                                             firstToLower(valueDef.getName()),
                                             firstToLower(reference.getName()),
@@ -357,9 +378,13 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
             // region collectingWith collection
             valueDef.getCollectionReferences().forEach(
                     reference -> mapperBuilder.addMethod(
-                            MethodSpec.methodBuilder("collectingWith" + firstToUpper(reference.getName()))
+                            MethodSpec
+                                    .methodBuilder(
+                                            "collectingWith"
+                                                    + firstToUpper(reference.getName())
+                                    )
                                     .addModifiers(Modifier.PUBLIC)
-                                    .addTypeVariable(I)
+                                    .addTypeVariable(varI)
                                     .returns(
                                             ParameterizedTypeName.get(
                                                     ClassName.get(Collector.class),
@@ -367,7 +392,9 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                                     WildcardTypeName.subtypeOf(Object.class),
                                                     ParameterizedTypeName.get(
                                                             ClassName.get(Optional.class),
-                                                            TypeName.get(valueDef.getElement().asType())
+                                                            TypeName.get(
+                                                                    valueDef.getElement().asType()
+                                                            )
                                                     )
                                             )
                                     )
@@ -381,10 +408,11 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                             "collector"
                                     )
                                     .addStatement(
-                                            "return new $T<>(" +
-                                                    "this," +
-                                                    "collector," +
-                                                    "($L, $L) -> $L.toBuilder().set$L($L).build())",
+                                            "return new $T<>("
+                                                    + "this,"
+                                                    + "collector,"
+                                                    + "($L, $L) -> "
+                                                    + "$L.toBuilder().set$L($L).build())",
                                             ReferenceCollector.class,
                                             firstToLower(valueDef.getName()),
                                             firstToLower(reference.getName()),
@@ -400,9 +428,13 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
             // region collectingManyWith reference
             valueDef.getReferences().forEach(
                     reference -> mapperBuilder.addMethod(
-                            MethodSpec.methodBuilder("collectingManyWith" + firstToUpper(reference.getName()))
+                            MethodSpec
+                                    .methodBuilder(
+                                            "collectingManyWith"
+                                                    + firstToUpper(reference.getName())
+                                    )
                                     .addModifiers(Modifier.PUBLIC)
-                                    .addTypeVariable(I)
+                                    .addTypeVariable(varI)
                                     .returns(
                                             ParameterizedTypeName.get(
                                                     ClassName.get(Collector.class),
@@ -410,7 +442,9 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                                     WildcardTypeName.subtypeOf(Object.class),
                                                     ParameterizedTypeName.get(
                                                             ClassName.get(List.class),
-                                                            TypeName.get(valueDef.getElement().asType())
+                                                            TypeName.get(
+                                                                    valueDef.getElement().asType()
+                                                            )
                                                     )
                                             )
                                     )
@@ -427,10 +461,15 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                             "collector"
                                     )
                                     .addStatement(
-                                            "return partitionAndFlatten($LAccessor, table, collectingWith$L(collector))",
+                                            "return partitionAndFlatten("
+                                                    + "$LAccessor, "
+                                                    + "table, "
+                                                    + "collectingWith$L(collector))",
                                             valueDef.getId()
                                                     .map(id -> firstToLower(id.getName()))
-                                                    .orElseThrow(() -> new IllegalStateException("Cannot collect without an ID")),
+                                                    .orElseThrow(() -> new IllegalStateException(
+                                                            "Cannot collect without an ID"
+                                                    )),
                                             firstToUpper(reference.getName())
                                     )
                                     .build()
@@ -441,9 +480,13 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
             // region collectingManyWith collection
             valueDef.getCollectionReferences().forEach(
                     reference -> mapperBuilder.addMethod(
-                            MethodSpec.methodBuilder("collectingManyWith" + firstToUpper(reference.getName()))
+                            MethodSpec
+                                    .methodBuilder(
+                                            "collectingManyWith"
+                                                    + firstToUpper(reference.getName())
+                                    )
                                     .addModifiers(Modifier.PUBLIC)
-                                    .addTypeVariable(I)
+                                    .addTypeVariable(varI)
                                     .returns(
                                             ParameterizedTypeName.get(
                                                     ClassName.get(Collector.class),
@@ -451,7 +494,9 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                                     WildcardTypeName.subtypeOf(Object.class),
                                                     ParameterizedTypeName.get(
                                                             ClassName.get(List.class),
-                                                            TypeName.get(valueDef.getElement().asType())
+                                                            TypeName.get(
+                                                                    valueDef.getElement().asType()
+                                                            )
                                                     )
                                             )
                                     )
@@ -465,10 +510,15 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                             "collector"
                                     )
                                     .addStatement(
-                                            "return partitionAndFlatten($LAccessor, table, collectingWith$L(collector))",
+                                            "return partitionAndFlatten("
+                                                    + "$LAccessor, "
+                                                    + "table, "
+                                                    + "collectingWith$L(collector))",
                                             valueDef.getId()
                                                     .map(id -> firstToLower(id.getName()))
-                                                    .orElseThrow(() -> new IllegalStateException("Cannot collect without an ID")),
+                                                    .orElseThrow(() -> new IllegalStateException(
+                                                            "Cannot collect without an ID"
+                                                    )),
                                             firstToUpper(reference.getName())
                                     )
                                     .build()
@@ -631,7 +681,9 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                         reference -> constructorBuilder
                                 .addParameter(
                                         typeJooqReferenceAccessor(
-                                                WildcardTypeName.subtypeOf(TypeName.get(Object.class)),
+                                                WildcardTypeName.subtypeOf(
+                                                        TypeName.get(Object.class)
+                                                ),
                                                 reference.getType()
                                         ),
                                         firstToLower(reference.getName()) + "Accessor"
@@ -682,6 +734,23 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                         ClassName.bestGuess("Builder"),
                         R
                 );
+                String builderParams = Stream.of(
+                        Stream.of("this.table"),
+                        valueDef.getProperties()
+                                .stream()
+                                .map(prop -> {
+                                    if (prop.getName().equals(property.getName())) {
+                                        return firstToLower(prop.getName()) + "Accessor";
+                                    }
+                                    return "this." + firstToLower(prop.getName()) + "Accessor";
+                                }),
+                        valueDef.getReferences()
+                                .stream()
+                                .map(ref -> "this." + firstToLower(ref.getName()) + "Accessor")
+                )
+                        .flatMap(Function.identity())
+                        .collect(Collectors.joining(", "));
+
                 builderBuilder.addMethod(
                         MethodSpec.methodBuilder(name)
                                 .addModifiers(Modifier.PUBLIC)
@@ -692,25 +761,10 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                 .returns(returnType)
                                 .addStatement(
                                         "return new Builder<>($L)",
-                                        Stream.of(
-                                                Stream.of("this.table"),
-                                                valueDef.getProperties()
-                                                        .stream()
-                                                        .map(prop -> {
-                                                            if (prop.getName().equals(property.getName())) {
-                                                                return firstToLower(prop.getName()) + "Accessor";
-                                                            }
-                                                            return "this." + firstToLower(prop.getName()) + "Accessor";
-                                                        }),
-                                                valueDef.getReferences()
-                                                        .stream()
-                                                        .map(ref -> "this." + firstToLower(ref.getName()) + "Accessor")
-                                        )
-                                                .flatMap(Function.identity())
-                                                .collect(Collectors.joining(", "))
+                                        builderParams
                                 )
                                 .build()
-                        );
+                );
 
                 builderBuilder.addMethod(
                         MethodSpec.methodBuilder(name)
@@ -732,16 +786,16 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                 .build()
                 );
 
-                TypeVariableName F = TypeVariableName.get("F");
+                TypeVariableName varF = TypeVariableName.get("F");
                 builderBuilder.addMethod(
                         MethodSpec.methodBuilder(name)
                                 .addModifiers(Modifier.PUBLIC)
-                                .addTypeVariable(F)
+                                .addTypeVariable(varF)
                                 .addParameter(
                                         ParameterizedTypeName.get(
                                                 ClassName.get(TableField.class),
                                                 R,
-                                                F
+                                                varF
                                         ),
                                         "field"
                                 )
@@ -749,14 +803,14 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                         ParameterizedTypeName.get(
                                                 ClassName.get(Function.class),
                                                 property.getType(),
-                                                F
+                                                varF
                                         ),
                                         "write"
                                 )
                                 .addParameter(
                                         ParameterizedTypeName.get(
                                                 ClassName.get(Function.class),
-                                                F,
+                                                varF,
                                                 property.getType()
                                         ),
                                         "extract"
@@ -779,12 +833,31 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                         ClassName.bestGuess("Builder"),
                         R
                 );
+                String builderParams = Stream.of(
+                        Stream.of("this.table"),
+                        valueDef.getProperties()
+                                .stream()
+                                .map(prop -> "this." + firstToLower(prop.getName()) + "Accessor"),
+                        valueDef.getReferences()
+                                .stream()
+                                .map(ref -> {
+                                    if (ref.getName().equals(reference.getName())) {
+                                        return firstToLower(ref.getName()) + "Accessor";
+                                    }
+                                    return "this." + firstToLower(ref.getName()) + "Accessor";
+                                })
+                )
+                        .flatMap(Function.identity())
+                        .collect(Collectors.joining(", "));
+
                 builderBuilder.addMethod(
                         MethodSpec.methodBuilder(name)
                                 .addModifiers(Modifier.PUBLIC)
                                 .addParameter(
                                         typeJooqReferenceAccessor(
-                                                WildcardTypeName.subtypeOf(TypeName.get(Object.class)),
+                                                WildcardTypeName.subtypeOf(
+                                                        TypeName.get(Object.class)
+                                                ),
                                                 reference.getType()
                                         ),
                                         firstToLower(reference.getName()) + "Accessor"
@@ -792,36 +865,21 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                 .returns(returnType)
                                 .addStatement(
                                         "return new Builder<>($L)",
-                                        Stream.of(
-                                                Stream.of("this.table"),
-                                                valueDef.getProperties()
-                                                        .stream()
-                                                        .map(prop -> "this." + firstToLower(prop.getName()) + "Accessor"),
-                                                valueDef.getReferences()
-                                                        .stream()
-                                                        .map(ref -> {
-                                                            if (ref.getName().equals(reference.getName())) {
-                                                                return firstToLower(ref.getName()) + "Accessor";
-                                                            }
-                                                            return "this." + firstToLower(ref.getName()) + "Accessor";
-                                                        })
-                                        )
-                                                .flatMap(Function.identity())
-                                                .collect(Collectors.joining(", "))
+                                        builderParams
                                 )
                                 .build()
-                        );
+                );
 
-                TypeVariableName ID = TypeVariableName.get("ID");
+                TypeVariableName varIdentityT = TypeVariableName.get("ID");
                 builderBuilder.addMethod(
                         MethodSpec.methodBuilder(name)
                                 .addModifiers(Modifier.PUBLIC)
-                                .addTypeVariable(ID)
+                                .addTypeVariable(varIdentityT)
                                 .addParameter(
                                         ParameterizedTypeName.get(
                                                 ClassName.get(TableField.class),
                                                 R,
-                                                ID
+                                                varIdentityT
                                         ),
                                         "field"
                                 )
@@ -829,7 +887,7 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                         ParameterizedTypeName.get(
                                                 ClassName.get(Function.class),
                                                 reference.getType(),
-                                                ID
+                                                varIdentityT
                                         ),
                                         "idGetter"
                                 )

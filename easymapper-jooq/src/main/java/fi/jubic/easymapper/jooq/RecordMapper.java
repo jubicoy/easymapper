@@ -15,10 +15,11 @@ import java.util.stream.Collectors;
 public interface RecordMapper<R extends Record, T>
         extends Mapper<Record, T>, Mangler<Record, R, T> {
     RecordMapper<R, T> alias(Table<R> alias);
+
     Table<R> table();
 
-    default <ID> Collector<Record, ?, List<T>> partitionAndFlatten(
-            JooqFieldAccessor<R, ID> partitionKeyAccessor,
+    default <IdentityT> Collector<Record, ?, List<T>> partitionAndFlatten(
+            JooqFieldAccessor<R, IdentityT> partitionKeyAccessor,
             Table<R> table,
             Collector<Record, ?, Optional<T>> collector
     ) {
@@ -36,7 +37,9 @@ public interface RecordMapper<R extends Record, T>
                 ),
                 map -> map.values().stream()
                         .map(optValue -> optValue.orElseThrow(
-                                () -> new IllegalStateException("Parsed empty when collecting many.")
+                                () -> new IllegalStateException(
+                                        "Parsed empty when collecting many."
+                                )
                         ))
                         .collect(Collectors.toList())
         );

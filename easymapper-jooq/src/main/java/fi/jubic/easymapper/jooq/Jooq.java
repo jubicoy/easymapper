@@ -14,10 +14,10 @@ public final class Jooq {
         return new PlainJooqFieldAccessor<>(field);
     }
 
-    public static <R extends Record, F, FF> JooqFieldAccessor<R, F> jooqField(
-            TableField<R, FF> field,
-            Function<F, FF> writeTransform,
-            Function<FF, F> extractTransform
+    public static <R extends Record, F, RecordT> JooqFieldAccessor<R, F> jooqField(
+            TableField<R, RecordT> field,
+            Function<F, RecordT> writeTransform,
+            Function<RecordT, F> extractTransform
     ) {
         return new TransformingJooqFieldAccessor<>(
                 field,
@@ -36,9 +36,10 @@ public final class Jooq {
         );
     }
 
-    public static <R extends Record, ID, T> JooqReferenceAccessor<R, ID, T> jooqReference(
-            TableField<R, ID> field,
-            Function<T, ID> idGetter
+    public static <R extends Record, IdentityT, T>
+            JooqReferenceAccessor<R, IdentityT, T> jooqReference(
+            TableField<R, IdentityT> field,
+            Function<T, IdentityT> idGetter
     ) {
         return new JooqReferenceAccessor<>(idGetter, jooqField(field));
     }

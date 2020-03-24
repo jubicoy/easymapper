@@ -1,7 +1,7 @@
 package fi.jubic.easymapper;
 
 /**
- * Extracts value from a record
+ * Extracts value from a record.
  * @param <R> Type of record
  * @param <F> Type of value
  */

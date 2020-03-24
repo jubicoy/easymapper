@@ -1,7 +1,7 @@
 package fi.jubic.easymapper;
 
 /**
- * Writes value to a record
+ * Writes value to a record.
  * @param <R> Type of record
  * @param <F> Type of value
  */

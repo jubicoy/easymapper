@@ -11,6 +11,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 /**
+ * Collector for reference values and value collections.
  *
  * @param <R> Source record
  * @param <T> Output type

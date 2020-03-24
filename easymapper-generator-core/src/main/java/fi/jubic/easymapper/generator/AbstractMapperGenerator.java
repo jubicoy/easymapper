@@ -37,7 +37,11 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
      * @param messager Messager instance for logging.
      * @return Spec of the mapper class.
      */
-    public abstract Optional<TypeSpec> generate(ValueDef valueDef, Messager messager, RoundEnvironment roundEnvironment);
+    public abstract Optional<TypeSpec> generate(
+            ValueDef valueDef,
+            Messager messager,
+            RoundEnvironment roundEnvironment
+    );
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnvironment) {
@@ -131,7 +135,11 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                         .stream()
                         .filter(innerClass -> innerClass.getKind() == ElementKind.CLASS)
                         .map(innerClass -> (TypeElement) innerClass)
-                        .filter(innerClass -> innerClass.getSimpleName().toString().equals("Builder"))
+                        .filter(
+                                innerClass -> innerClass.getSimpleName()
+                                        .toString()
+                                        .equals("Builder")
+                        )
                         .findFirst()
                         .orElseThrow(() -> {
                             messager.printMessage(
@@ -161,7 +169,8 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                     )
                     .build()
                     .writeTo(processingEnv.getFiler());
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             messager.printMessage(
                     Diagnostic.Kind.ERROR,
                     String.format(
@@ -179,7 +188,10 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                 .isPresent();
     }
 
-    private boolean isCollectionReference(ExecutableElement element, RoundEnvironment roundEnvironment) {
+    private boolean isCollectionReference(
+            ExecutableElement element,
+            RoundEnvironment roundEnvironment
+    ) {
         TypeName typeName = TypeName.get(element.getReturnType());
         if (!(typeName instanceof ParameterizedTypeName)) {
             return false;
@@ -212,7 +224,10 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
         return Optional.of(idProperties.get(0));
     }
 
-    protected Optional<TypeElement> findElementByTypeName(TypeName typeName, RoundEnvironment roundEnvironment) {
+    protected Optional<TypeElement> findElementByTypeName(
+            TypeName typeName,
+            RoundEnvironment roundEnvironment
+    ) {
         return roundEnvironment.getElementsAnnotatedWith(EasyValue.class)
                 .stream()
                 .filter(element -> typeName.equals(TypeName.get(element.asType())))
