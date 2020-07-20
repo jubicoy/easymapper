@@ -8,9 +8,11 @@ import com.squareup.javapoet.TypeSpec;
 import fi.jubic.easymapper.annotations.EasyId;
 import fi.jubic.easymapper.generator.def.PropertyAccess;
 import fi.jubic.easymapper.generator.def.PropertyDef;
+import fi.jubic.easymapper.generator.def.PropertyKind;
 import fi.jubic.easymapper.generator.def.ValueDef;
 import fi.jubic.easyvalue.EasyValue;
 
+import javax.annotation.Nullable;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -21,6 +23,9 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.util.List;
@@ -29,6 +34,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class AbstractMapperGenerator extends AbstractProcessor {
+    private Types typeUtils;
+    private TypeMirror optionalType;
     private Messager messager;
 
     /**
@@ -47,6 +54,12 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
     public synchronized void init(ProcessingEnvironment processingEnvironment) {
         super.init(processingEnvironment);
         messager = processingEnvironment.getMessager();
+        typeUtils = processingEnvironment.getTypeUtils();
+        optionalType = processingEnv.getTypeUtils().erasure(
+                processingEnv.getElementUtils()
+                        .getTypeElement(Optional.class.getCanonicalName())
+                        .asType()
+        );
     }
 
     @Override
@@ -86,12 +99,19 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                 )
                 .collect(Collectors.toList());
 
+        TypeMirror optionalType = processingEnv.getTypeUtils().erasure(
+                processingEnv.getElementUtils()
+                        .getTypeElement(Optional.class.getCanonicalName())
+                        .asType()
+        );
+
         return new ValueDef(
                 element.getSimpleName().toString(),
                 element,
                 getIdField(element)
                         .map(id -> new PropertyDef(
                                 PropertyAccess.Get,
+                                PropertyKind.Required,
                                 id,
                                 TypeName.get(id.getReturnType()),
                                 id.getSimpleName().toString()
@@ -105,6 +125,7 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                                 method.getSimpleName().toString().startsWith("get")
                                         ? PropertyAccess.Get
                                         : PropertyAccess.Is,
+                                getPropertyKind(method),
                                 method,
                                 TypeName.get(method.getReturnType()),
                                 method.getSimpleName().toString()
@@ -115,6 +136,7 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                         .filter(method -> isReference(method, roundEnvironment))
                         .map(method -> new PropertyDef(
                                 PropertyAccess.Get,
+                                getPropertyKind(method),
                                 method,
                                 TypeName.get(method.getReturnType()),
                                 method.getSimpleName().toString()
@@ -125,6 +147,7 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                         .filter(method -> isCollectionReference(method, roundEnvironment))
                         .map(method -> new PropertyDef(
                                 PropertyAccess.Get,
+                                getPropertyKind(method),
                                 method,
                                 TypeName.get(method.getReturnType()),
                                 method.getSimpleName().toString()
@@ -234,5 +257,19 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                 .filter(element -> element.getKind() == ElementKind.CLASS)
                 .map(element -> (TypeElement) element)
                 .findFirst();
+    }
+
+    private PropertyKind getPropertyKind(ExecutableElement method) {
+        if (method.getAnnotation(Nullable.class) != null) {
+            return PropertyKind.Nullable;
+        }
+
+        boolean optional = typeUtils.isAssignable(
+                method.getReturnType(),
+                optionalType
+        );
+        return optional
+                ? PropertyKind.Optional
+                : PropertyKind.Required;
     }
 }

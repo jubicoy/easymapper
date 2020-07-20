@@ -4,6 +4,7 @@ import fi.jubic.easymapper.annotations.EasyId;
 import fi.jubic.easymapper.jooqtest.chatroom.db.tables.records.ChatUserRecord;
 import fi.jubic.easyvalue.EasyValue;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 
@@ -14,6 +15,7 @@ public abstract class User {
     @EasyId
     public abstract Integer getId();
 
+    @Nullable
     public abstract Role getRole();
 
     public abstract String getName();

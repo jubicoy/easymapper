@@ -6,17 +6,20 @@ import javax.lang.model.element.ExecutableElement;
 
 public class PropertyDef {
     private final PropertyAccess access;
+    private final PropertyKind kind;
     private final ExecutableElement element;
     private final TypeName type;
     private final String name;
 
     public PropertyDef(
             PropertyAccess access,
+            PropertyKind kind,
             ExecutableElement element,
             TypeName type,
             String name
     ) {
         this.access = access;
+        this.kind = kind;
         this.element = element;
         if (type.isPrimitive()) {
             this.type = type.box();
@@ -29,6 +32,10 @@ public class PropertyDef {
 
     public PropertyAccess getAccess() {
         return access;
+    }
+
+    public PropertyKind getKind() {
+        return kind;
     }
 
     public ExecutableElement getElement() {

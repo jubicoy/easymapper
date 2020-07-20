@@ -10,6 +10,7 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
 import com.squareup.javapoet.WildcardTypeName;
+import fi.jubic.easymapper.FieldAccessor;
 import fi.jubic.easymapper.ReferenceCollector;
 import fi.jubic.easymapper.generator.def.PropertyDef;
 import fi.jubic.easymapper.generator.def.ValueDef;
@@ -767,6 +768,24 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                 );
 
                 builderBuilder.addMethod(
+                        MethodSpec
+                                .methodBuilder(
+                                        String.format(
+                                                "without%s",
+                                                firstToUpper(property.getName())
+                                        )
+                                )
+                                .addModifiers(Modifier.PUBLIC)
+                                .returns(returnType)
+                                .addStatement(
+                                        "return $L(new $T<>())",
+                                        name,
+                                        ClassName.get(JooqFieldAccessor.NoOpAccessor.class)
+                                )
+                                .build()
+                );
+
+                builderBuilder.addMethod(
                         MethodSpec.methodBuilder(name)
                                 .addModifiers(Modifier.PUBLIC)
                                 .addParameter(
@@ -866,6 +885,24 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                 .addStatement(
                                         "return new Builder<>($L)",
                                         builderParams
+                                )
+                                .build()
+                );
+
+                builderBuilder.addMethod(
+                        MethodSpec
+                                .methodBuilder(
+                                        String.format(
+                                                "without%s",
+                                                firstToUpper(reference.getName())
+                                        )
+                                )
+                                .addModifiers(Modifier.PUBLIC)
+                                .returns(returnType)
+                                .addStatement(
+                                        "return $L($T.noOp())",
+                                        name,
+                                        ClassName.get(JooqReferenceAccessor.class)
                                 )
                                 .build()
                 );

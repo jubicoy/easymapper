@@ -44,4 +44,11 @@ public class JooqReferenceAccessor<R extends Record, IdentityT, T>
                 idAccessor.alias(tableAlias)
         );
     }
+
+    public static <R extends Record, IdentityT, T> JooqReferenceAccessor<R, IdentityT, T> noOp() {
+        return new JooqReferenceAccessor<>(
+                ignore -> null,
+                new JooqFieldAccessor.NoOpAccessor<>()
+        );
+    }
 }

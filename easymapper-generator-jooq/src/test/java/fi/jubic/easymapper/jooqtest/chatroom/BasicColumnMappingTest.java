@@ -69,4 +69,32 @@ class BasicColumnMappingTest {
                 user
         );
     }
+
+    @Test
+    void testWithoutColumnMapping() {
+        ChatUserRecord record = new ChatUserRecord();
+        record.set(CHAT_USER.ID, 1);
+        record.set(CHAT_USER.ROLE, "USER");
+        record.set(CHAT_USER.NAME, "Antti Admin");
+        record.set(CHAT_USER.DELETED, false);
+
+        UserRecordMapper<ChatUserRecord> mapper = UserRecordMapper.builder(CHAT_USER)
+                .setIdAccessor(CHAT_USER.ID)
+                .withoutRole()
+                .setNameAccessor(CHAT_USER.NAME)
+                .setDeletedAccessor(CHAT_USER.DELETED)
+                .build();
+
+        User user = mapper.map(record);
+
+        assertEquals(
+                User.builder()
+                        .setId(1)
+                        .setRole(null)
+                        .setName("Antti Admin")
+                        .setDeleted(false)
+                        .build(),
+                user
+        );
+    }
 }

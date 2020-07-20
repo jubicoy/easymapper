@@ -8,6 +8,7 @@ import fi.jubic.easymapper.jooqtest.DbUtil;
 import fi.jubic.easymapper.jooqtest.chatroom.db.tables.records.ChatUserRecord;
 import fi.jubic.easymapper.jooqtest.chatroom.models.Role;
 import fi.jubic.easymapper.jooqtest.chatroom.models.User;
+import fi.jubic.easymapper.jooqtest.chatroom.models.UserRecordMapper;
 import org.jooq.DSLContext;
 import org.jooq.impl.DSL;
 import org.junit.jupiter.api.BeforeAll;
@@ -93,6 +94,42 @@ public class BasicWriteTest {
 
         assertEquals(1, updatedUser.getId().intValue());
         assertEquals(Role.SUPERADMIN, updatedUser.getRole());
+        assertEquals("new name", updatedUser.getName());
+    }
+
+    @Test
+    @DataSet("chat-sample/datasets/multiple-rooms.xml")
+    void testUpdateWithoutReferencesWithNoOpAccessor() {
+        DSLContext create = DSL.using(connection);
+
+        UserRecordMapper<ChatUserRecord> mapper = UserRecordMapper.builder(CHAT_USER)
+                .setIdAccessor(CHAT_USER.ID)
+                .withoutRole()
+                .setNameAccessor(CHAT_USER.NAME)
+                .setDeletedAccessor(CHAT_USER.DELETED)
+                .build();
+
+        ChatUserRecord record = create.select(DSL.asterisk())
+                .from(CHAT_USER)
+                .where(CHAT_USER.ID.eq(1))
+                .fetchOneInto(CHAT_USER);
+
+        mapper.write(
+                record,
+                mapper.map(record)
+                        .toBuilder()
+                        .setName("new name")
+                        .build()
+        ).store();
+
+        ChatUserRecord updatedUser = create.select(DSL.asterisk())
+                .from(CHAT_USER)
+                .where(CHAT_USER.ID.eq(1))
+                .fetchOptionalInto(CHAT_USER)
+                .orElseThrow(RuntimeException::new);
+
+        assertEquals(1, updatedUser.getId().intValue());
+        assertEquals(Role.SUPERADMIN.toString(), updatedUser.getRole());
         assertEquals("new name", updatedUser.getName());
     }
 }
