@@ -99,12 +99,6 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                 )
                 .collect(Collectors.toList());
 
-        TypeMirror optionalType = processingEnv.getTypeUtils().erasure(
-                processingEnv.getElementUtils()
-                        .getTypeElement(Optional.class.getCanonicalName())
-                        .asType()
-        );
-
         return new ValueDef(
                 element.getSimpleName().toString(),
                 element,

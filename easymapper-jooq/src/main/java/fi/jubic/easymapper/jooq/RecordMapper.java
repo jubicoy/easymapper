@@ -7,6 +7,7 @@ import org.jooq.Record;
 import org.jooq.Table;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Collector;
@@ -27,7 +28,9 @@ public interface RecordMapper<R extends Record, T>
                 Collectors.groupingBy(
                         record -> {
                             try {
-                                return partitionKeyAccessor.extract(record.into(table));
+                                return Optional.ofNullable(
+                                        partitionKeyAccessor.extract(record.into(table))
+                                );
                             }
                             catch (MappingException e) {
                                 throw new RuntimeException(e);
@@ -35,13 +38,14 @@ public interface RecordMapper<R extends Record, T>
                         },
                         collector
                 ),
-                map -> map.values().stream()
-                        .map(optValue -> optValue.orElseThrow(
-                                () -> new IllegalStateException(
-                                        "Parsed empty when collecting many."
-                                )
-                        ))
+                map -> map.entrySet()
+                        .stream()
+                        .filter(entry -> entry.getKey().isPresent())
+                        .map(Map.Entry::getValue)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
                         .collect(Collectors.toList())
+
         );
     }
 

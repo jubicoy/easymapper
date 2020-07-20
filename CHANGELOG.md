@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `withoutX` JOOQ mapper builder method for ignoring properties.
 
+### Fixed
+- Fix `NullPointerException` when joined sub-collection is empty.
+
 ## [0.3.0] - 2020-03-24
 ### Added
 - Generate `collectingWith` and `collectingWithMany` for references to allow

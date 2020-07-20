@@ -6,6 +6,7 @@ import com.github.database.rider.core.api.dataset.DataSet;
 import com.github.database.rider.junit5.DBUnitExtension;
 import fi.jubic.easymapper.jooqtest.DbUtil;
 import fi.jubic.easymapper.jooqtest.chatroom.db.tables.ChatUser;
+import fi.jubic.easymapper.jooqtest.chatroom.db.tables.RoomMembership;
 import fi.jubic.easymapper.jooqtest.chatroom.db.tables.records.RoomRecord;
 import fi.jubic.easymapper.jooqtest.chatroom.models.Role;
 import fi.jubic.easymapper.jooqtest.chatroom.models.Room;
@@ -130,7 +131,8 @@ public class CollectWithJoinsTest {
                 .fetchStream()
                 .collect(
                         User.mapper.collectingManyWithRooms(
-                                Room.mapper.withAdmin(User.mapper.alias(admin))
+                                Room.mapper
+                                        .withAdmin(User.mapper.alias(admin))
                                         .withCreatedBy(User.mapper.alias(createdBy))
                                         .collectingManyWithMembers(User.mapper.alias(member))
                         )
@@ -190,14 +192,22 @@ public class CollectWithJoinsTest {
                 Arrays.asList(
                         random.toBuilder()
                                 .setMembers(Arrays.asList(
-                                        antti.toBuilder().setRooms(Collections.emptyList()).build(),
-                                        unto.toBuilder().setRooms(Collections.emptyList()).build()
+                                        antti.toBuilder()
+                                                .setRooms(Collections.emptyList())
+                                                .build(),
+                                        unto.toBuilder()
+                                                .setRooms(Collections.emptyList())
+                                                .build()
                                 ))
                                 .build(),
                         general.toBuilder()
                                 .setMembers(Arrays.asList(
-                                        antti.toBuilder().setRooms(Collections.emptyList()).build(),
-                                        matias.toBuilder().setRooms(Collections.emptyList()).build()
+                                        antti.toBuilder()
+                                                .setRooms(Collections.emptyList())
+                                                .build(),
+                                        matias.toBuilder()
+                                                .setRooms(Collections.emptyList())
+                                                .build()
                                 ))
                                 .build(),
                         empty.toBuilder()
@@ -319,6 +329,57 @@ public class CollectWithJoinsTest {
                                 .build()
                 ),
                 rooms
+        );
+    }
+
+    @Test
+    @DataSet("chat-sample/datasets/multiple-rooms.xml")
+    void testCollectWithReferenceAndEmptyRelation() {
+        ChatUser admin = CHAT_USER.as("admin");
+        ChatUser createdBy = CHAT_USER.as("created_by");
+
+        RoomMembership nestedMembership = ROOM_MEMBERSHIP.as("nested_room_membership");
+        ChatUser member = CHAT_USER.as("member");
+        fi.jubic.easymapper.jooqtest.chatroom.db.tables.Room nestedRoom = ROOM.as("nested_room");
+        ChatUser nestedAdmin = CHAT_USER.as("nested_admin");
+        ChatUser nestedCreatedBy = CHAT_USER.as("nested_created_by");
+
+        RoomRecordMapper<RoomRecord> nestedRoomMapper = Room.mapper
+                .alias(nestedRoom)
+                .withAdmin(User.mapper.alias(nestedAdmin))
+                .withCreatedBy(User.mapper.alias(nestedCreatedBy));
+
+        Room room = DSL.using(connection)
+                .select()
+                .from(ROOM)
+                .leftJoin(admin).on(admin.ID.eq(ROOM.ADMINISTRATOR_ID))
+                .leftJoin(createdBy).on(createdBy.ID.eq(ROOM.CREATED_BY_ID))
+                .leftJoin(ROOM_MEMBERSHIP).on(ROOM_MEMBERSHIP.ROOM_ID.eq(ROOM.ID))
+                .leftJoin(member).on(member.ID.eq(ROOM_MEMBERSHIP.USER_ID))
+                .leftJoin(nestedMembership).on(nestedMembership.USER_ID.eq(member.ID))
+                .leftJoin(nestedRoom).on(nestedRoom.ID.eq(nestedMembership.ROOM_ID))
+                .leftJoin(nestedAdmin).on(nestedAdmin.ID.eq(nestedRoom.ADMINISTRATOR_ID))
+                .leftJoin(nestedCreatedBy).on(nestedCreatedBy.ID.eq(nestedRoom.CREATED_BY_ID))
+                .where(ROOM.ID.eq(empty.getId()))
+                .fetch()
+                .stream()
+                .collect(
+                        Room.mapper
+                                .withAdmin(User.mapper.alias(admin))
+                                .withCreatedBy(User.mapper.alias(createdBy))
+                                .collectingWithMembers(
+                                        User.mapper.alias(member)
+                                                .collectingManyWithRooms(nestedRoomMapper)
+                                )
+                )
+                .orElseThrow(IllegalStateException::new);
+
+        assertEquals(
+                empty.toBuilder()
+                    .setAdmin(unto)
+                    .setMembers(Collections.emptyList())
+                    .build(),
+                room
         );
     }
 
