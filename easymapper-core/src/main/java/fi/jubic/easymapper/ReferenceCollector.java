@@ -15,20 +15,21 @@ import java.util.stream.Collector;
  *
  * @param <R> Source record
  * @param <T> Output type
+ * @param <B> Intermediate representation type
  * @param <U> Reference collection type
  * @param <I> Intermediate reference collection type
  */
-public class ReferenceCollector<R, T, U, I>
-        implements Collector<R, IntermediateSubCollectionResult<T, I>, Optional<T>> {
+public class ReferenceCollector<R, T, B, U, I>
+        implements Collector<R, IntermediateSubCollectionResult<B, I>, Optional<T>> {
 
-    private final Mapper<R, T> rootMapper;
+    private final Mapper<R, T, B> rootMapper;
     private final Collector<R, I, U> subCollector;
-    private final BiFunction<T, U, T> finisher;
+    private final BiFunction<B, U, B> finisher;
 
     public ReferenceCollector(
-            Mapper<R, T> rootMapper,
+            Mapper<R, T, B> rootMapper,
             Collector<R, I, U> subCollector,
-            BiFunction<T, U, T> finisher
+            BiFunction<B, U, B> finisher
     ) {
         this.rootMapper = rootMapper;
         this.subCollector = subCollector;
@@ -37,7 +38,7 @@ public class ReferenceCollector<R, T, U, I>
 
 
     @Override
-    public Supplier<IntermediateSubCollectionResult<T, I>> supplier() {
+    public Supplier<IntermediateSubCollectionResult<B, I>> supplier() {
         return () -> new IntermediateSubCollectionResult<>(
                 null,
                 subCollector.supplier().get()
@@ -45,17 +46,17 @@ public class ReferenceCollector<R, T, U, I>
     }
 
     @Override
-    public BiConsumer<IntermediateSubCollectionResult<T, I>, R> accumulator() {
+    public BiConsumer<IntermediateSubCollectionResult<B, I>, R> accumulator() {
         return (result, source) -> {
             if (result.getIntermediateRoot() == null) {
-                result.setIntermediateRoot(rootMapper.map(source));
+                result.setIntermediateRoot(rootMapper.intermediateMap(source));
             }
             subCollector.accumulator().accept(result.getSubCollection(), source);
         };
     }
 
     @Override
-    public BinaryOperator<IntermediateSubCollectionResult<T, I>> combiner() {
+    public BinaryOperator<IntermediateSubCollectionResult<B, I>> combiner() {
         return (a, b) -> new IntermediateSubCollectionResult<>(
                 Optional.ofNullable(a.getIntermediateRoot()).orElse(b.getIntermediateRoot()),
                 subCollector.combiner().apply(a.getSubCollection(), b.getSubCollection())
@@ -63,11 +64,14 @@ public class ReferenceCollector<R, T, U, I>
     }
 
     @Override
-    public Function<IntermediateSubCollectionResult<T, I>, Optional<T>> finisher() {
+    public Function<IntermediateSubCollectionResult<B, I>, Optional<T>> finisher() {
         return intermediateResult -> Optional.ofNullable(intermediateResult.getIntermediateRoot())
-                .map(root -> finisher.apply(
-                        root,
-                        subCollector.finisher().apply(intermediateResult.getSubCollection())
+                .map(root -> rootMapper.finalize(
+                        finisher.apply(
+                                root,
+                                subCollector.finisher()
+                                        .apply(intermediateResult.getSubCollection())
+                        )
                 ));
     }
 

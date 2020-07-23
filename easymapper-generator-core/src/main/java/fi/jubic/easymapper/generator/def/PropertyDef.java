@@ -3,6 +3,8 @@ package fi.jubic.easymapper.generator.def;
 import com.squareup.javapoet.TypeName;
 
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import java.util.Optional;
 
 public class PropertyDef {
     private final PropertyAccess access;
@@ -11,12 +13,15 @@ public class PropertyDef {
     private final TypeName type;
     private final String name;
 
+    private final TypeElement referenceElement;
+
     public PropertyDef(
             PropertyAccess access,
             PropertyKind kind,
             ExecutableElement element,
             TypeName type,
-            String name
+            String name,
+            TypeElement referenceElement
     ) {
         this.access = access;
         this.kind = kind;
@@ -28,6 +33,7 @@ public class PropertyDef {
             this.type = type;
         }
         this.name = name;
+        this.referenceElement = referenceElement;
     }
 
     public PropertyAccess getAccess() {
@@ -48,5 +54,9 @@ public class PropertyDef {
 
     public String getName() {
         return name;
+    }
+
+    public Optional<TypeElement> getReferenceElement() {
+        return Optional.ofNullable(referenceElement);
     }
 }

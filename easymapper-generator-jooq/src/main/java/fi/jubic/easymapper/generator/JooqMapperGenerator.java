@@ -10,7 +10,7 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
 import com.squareup.javapoet.WildcardTypeName;
-import fi.jubic.easymapper.FieldAccessor;
+import fi.jubic.easymapper.MappingException;
 import fi.jubic.easymapper.ReferenceCollector;
 import fi.jubic.easymapper.generator.def.PropertyDef;
 import fi.jubic.easymapper.generator.def.ValueDef;
@@ -26,6 +26,8 @@ import javax.annotation.processing.Messager;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import java.util.List;
 import java.util.Objects;
@@ -38,7 +40,7 @@ import java.util.stream.Stream;
 @AutoService(Processor.class)
 @SupportedAnnotationTypes({"fi.jubic.easymapper.annotations.EasyId"})
 public class JooqMapperGenerator extends AbstractMapperGenerator {
-    private static TypeVariableName R = TypeVariableName.get("R");
+    private static final TypeVariableName R = TypeVariableName.get("R");
 
     private static final String FIELD_NAME_TABLE = "table";
 
@@ -61,7 +63,8 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
         TypeName superInterface = ParameterizedTypeName.get(
                 ClassName.get(RecordMapper.class),
                 R,
-                TypeName.get(valueDef.getElement().asType())
+                TypeName.get(valueDef.getElement().asType()),
+                TypeName.get(valueDef.getBuilder().asType())
         );
 
         TypeSpec.Builder mapperBuilder = TypeSpec.classBuilder(selfName)
@@ -94,7 +97,7 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                         FieldSpec.builder(
                                 typeJooqReferenceAccessor(
                                         WildcardTypeName.subtypeOf(ClassName.get(Object.class)),
-                                        reference.getType()
+                                        reference
                                 ),
                                 firstToLower(reference.getName() + "Accessor"),
                                 Modifier.PRIVATE,
@@ -106,7 +109,7 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
         valueDef.getReferences().forEach(
                 reference -> mapperBuilder.addField(
                         FieldSpec.builder(
-                                typeRecordMapper(reference.getType()),
+                                typeRecordMapper(reference),
                                 firstToLower(reference.getName()) + "Mapper",
                                 Modifier.PRIVATE,
                                 Modifier.FINAL
@@ -140,7 +143,7 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                             .addParameter(
                                     typeJooqReferenceAccessor(
                                             WildcardTypeName.subtypeOf(TypeName.get(Object.class)),
-                                            reference.getType()
+                                            reference
                                     ),
                                     firstToLower(reference.getName()) + "Accessor"
                             )
@@ -153,7 +156,7 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
             valueDef.getReferences().forEach(
                     reference -> constructorBuilder
                             .addParameter(
-                                    typeRecordMapper(reference.getType()),
+                                    typeRecordMapper(reference),
                                     firstToLower(reference.getName()) + "Mapper"
                             )
                             .addStatement(
@@ -203,7 +206,7 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                             )
                                     )
                                     .addParameter(
-                                            typeRecordMapper(reference.getType()),
+                                            typeRecordMapper(reference),
                                             firstToLower(reference.getName() + "Mapper")
                                     )
                                     .addStatement(
@@ -286,22 +289,20 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
             );
             callBuilder.add(".build()");
 
-            MethodSpec.Builder mapBuilder = MethodSpec.methodBuilder("map")
-                    .addModifiers(Modifier.PUBLIC)
-                    .addAnnotation(Override.class)
-                    .returns(TypeName.get(valueDef.getElement().asType()))
-                    .addParameter(
-                            ClassName.get(Record.class),
-                            "input"
-                    )
-                    .addStatement(
-                            "$T inputRecord = input.into($N)",
-                            R,
-                            FIELD_NAME_TABLE
-                    );
-
             mapperBuilder.addMethod(
-                    mapBuilder
+                    MethodSpec.methodBuilder("map")
+                            .addModifiers(Modifier.PUBLIC)
+                            .addAnnotation(Override.class)
+                            .returns(TypeName.get(valueDef.getElement().asType()))
+                            .addParameter(
+                                    ClassName.get(Record.class),
+                                    "input"
+                            )
+                            .addStatement(
+                                    "$T inputRecord = input.into($N)",
+                                    R,
+                                    FIELD_NAME_TABLE
+                            )
                             .beginControlFlow(
                                     "if ($LAccessor.extract(inputRecord) == null)",
                                     firstToLower(
@@ -317,10 +318,86 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
         }
         // endregion Mapper::map
 
+        // region Mapper::intermediateMap
+        {
+            CodeBlock.Builder controlFlow = CodeBlock.builder()
+                    .addStatement(
+                            "$T.Builder builder = $T.builder()",
+                            TypeName.get(valueDef.getElement().asType()),
+                            TypeName.get(valueDef.getElement().asType())
+                    );
+            valueDef.getProperties().forEach(
+                    property -> controlFlow.addStatement(
+                            "builder = builder.set$L($LAccessor.extract(inputRecord))",
+                            firstToUpper(property.getName()),
+                            firstToLower(property.getName())
+                    )
+            );
+            valueDef.getReferences().forEach(
+                    reference -> controlFlow
+                            .beginControlFlow(
+                                    "if ($LMapper != null)",
+                                    firstToLower(reference.getName())
+                            )
+                            .addStatement(
+                                    "builder = builder.set$L($LMapper.map(input))",
+                                    firstToUpper(reference.getName()),
+                                    firstToLower(reference.getName())
+                            )
+                            .endControlFlow()
+            );
+            controlFlow.addStatement("return builder");
+
+            mapperBuilder.addMethod(
+                    MethodSpec.methodBuilder("intermediateMap")
+                            .addModifiers(Modifier.PUBLIC)
+                            .addAnnotation(Override.class)
+                            .returns(TypeName.get(valueDef.getBuilder().asType()))
+                            .addParameter(
+                                    ClassName.get(Record.class),
+                                    "input"
+                            )
+                            .addStatement(
+                                    "$T inputRecord = input.into($N)",
+                                    R,
+                                    FIELD_NAME_TABLE
+                            )
+                            .beginControlFlow(
+                                    "if ($LAccessor.extract(inputRecord) == null)",
+                                    firstToLower(
+                                            valueDef.getId()
+                                                    .orElseThrow(IllegalStateException::new)
+                                                    .getName()
+                                    ))
+                            .addStatement("return null")
+                            .endControlFlow()
+                            .addCode(controlFlow.build())
+                            .build()
+            );
+        }
+        // endregion Mapper::intermediateMap
+
+        // region Mapper::finalize
+        {
+            mapperBuilder.addMethod(
+                    MethodSpec.methodBuilder("finalize")
+                            .addModifiers(Modifier.PUBLIC)
+                            .addAnnotation(Override.class)
+                            .returns(TypeName.get(valueDef.getElement().asType()))
+                            .addParameter(
+                                    TypeName.get(valueDef.getBuilder().asType()),
+                                    "intermediate"
+                            )
+                            .addStatement("return intermediate.build()")
+                            .build()
+            );
+        }
+        // endregion Mapper::finalize
+
         {
             TypeVariableName varI = TypeVariableName.get("I");
 
-            // region collectinWith reference
+            // region collectingWith reference
             valueDef.getReferences().forEach(
                     reference -> mapperBuilder.addMethod(
                             MethodSpec
@@ -357,10 +434,10 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                     )
                                     .addStatement(
                                             "return new $T<>("
-                                                    + "this,"
-                                                    + "collector,"
+                                                    + "this, "
+                                                    + "collector, "
                                                     + "($L, $L) -> $L.isPresent() "
-                                                    + "? $L.toBuilder().set$L($L.get()).build() "
+                                                    + "? $L.set$L($L.get()) "
                                                     + ": $L)",
                                             ReferenceCollector.class,
                                             firstToLower(valueDef.getName()),
@@ -410,10 +487,10 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                     )
                                     .addStatement(
                                             "return new $T<>("
-                                                    + "this,"
-                                                    + "collector,"
+                                                    + "this, "
+                                                    + "collector, "
                                                     + "($L, $L) -> "
-                                                    + "$L.toBuilder().set$L($L).build())",
+                                                    + "$L.set$L($L))",
                                             ReferenceCollector.class,
                                             firstToLower(valueDef.getName()),
                                             firstToLower(reference.getName()),
@@ -647,7 +724,7 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                             FieldSpec.builder(
                                     typeJooqReferenceAccessor(
                                             WildcardTypeName.subtypeOf(ClassName.get(Object.class)),
-                                            reference.getType()
+                                            reference
                                     ),
                                     firstToLower(reference.getName() + "Accessor"),
                                     Modifier.PRIVATE,
@@ -685,7 +762,7 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                                 WildcardTypeName.subtypeOf(
                                                         TypeName.get(Object.class)
                                                 ),
-                                                reference.getType()
+                                                reference
                                         ),
                                         firstToLower(reference.getName()) + "Accessor"
                                 )
@@ -877,7 +954,7 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                                                 WildcardTypeName.subtypeOf(
                                                         TypeName.get(Object.class)
                                                 ),
-                                                reference.getType()
+                                                reference
                                         ),
                                         firstToLower(reference.getName()) + "Accessor"
                                 )
@@ -988,20 +1065,40 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
         );
     }
 
-    private TypeName typeJooqReferenceAccessor(TypeName idField, TypeName referred) {
+    private TypeName typeJooqReferenceAccessor(TypeName idField, PropertyDef property) {
         return ParameterizedTypeName.get(
                 ClassName.get(JooqReferenceAccessor.class),
                 R,
                 idField,
-                referred
+                property.getType(),
+                property.getReferenceElement()
+                        .orElseThrow(() -> new MappingException("Invalid reference type"))
+                        .getEnclosedElements()
+                        .stream()
+                        .filter(elem -> elem.getKind() == ElementKind.CLASS)
+                        .filter(elem -> elem.getSimpleName().toString().equals("Builder"))
+                        .findFirst()
+                        .map(Element::asType)
+                        .map(TypeName::get)
+                        .orElseThrow(() -> new MappingException("Builder not found"))
         );
     }
 
-    private TypeName typeRecordMapper(TypeName mappedType) {
+    private TypeName typeRecordMapper(PropertyDef property) {
         return ParameterizedTypeName.get(
                 ClassName.get(RecordMapper.class),
                 WildcardTypeName.subtypeOf(Record.class),
-                mappedType
+                property.getType(),
+                property.getReferenceElement()
+                        .orElseThrow(() -> new MappingException("Invalid reference type"))
+                        .getEnclosedElements()
+                        .stream()
+                        .filter(elem -> elem.getKind() == ElementKind.CLASS)
+                        .filter(elem -> elem.getSimpleName().toString().equals("Builder"))
+                        .findFirst()
+                        .map(Element::asType)
+                        .map(TypeName::get)
+                        .orElseThrow(() -> new MappingException("Builder not found"))
         );
     }
 

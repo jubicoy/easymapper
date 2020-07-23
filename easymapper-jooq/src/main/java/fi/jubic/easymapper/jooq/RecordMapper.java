@@ -9,13 +9,12 @@ import org.jooq.Table;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-public interface RecordMapper<R extends Record, T>
-        extends Mapper<Record, T>, Mangler<Record, R, T> {
-    RecordMapper<R, T> alias(Table<R> alias);
+public interface RecordMapper<R extends Record, T, B>
+        extends Mapper<Record, T, B>, Mangler<Record, R, T> {
+    RecordMapper<R, T, B> alias(Table<R> alias);
 
     Table<R> table();
 
@@ -47,10 +46,5 @@ public interface RecordMapper<R extends Record, T>
                         .collect(Collectors.toList())
 
         );
-    }
-
-    @Override
-    default BiConsumer<List<T>, Record> accumulator() {
-        return (list, record) -> list.add(map(record));
     }
 }

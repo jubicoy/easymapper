@@ -383,6 +383,55 @@ public class CollectWithJoinsTest {
         );
     }
 
+    @Test
+    @DataSet("chat-sample/datasets/multiple-rooms.xml")
+    void testCollectWithReferenceAndSubCollection() {
+        ChatUser admin = CHAT_USER.as("admin");
+        ChatUser createdBy = CHAT_USER.as("created_by");
+
+        fi.jubic.easymapper.jooqtest.chatroom.db.tables.Room nestedRoom = ROOM.as("nested_room");
+        ChatUser nestedAdmin = CHAT_USER.as("nested_admin");
+        ChatUser nestedCreatedBy = CHAT_USER.as("nested_created_by");
+
+        RoomRecordMapper<RoomRecord> nestedRoomMapper = Room.mapper
+                .alias(nestedRoom)
+                .withAdmin(User.mapper.alias(nestedAdmin))
+                .withCreatedBy(User.mapper.alias(nestedCreatedBy));
+
+        Room room = DSL.using(connection)
+                .select()
+                .from(ROOM)
+                .leftJoin(admin).on(admin.ID.eq(ROOM.ADMINISTRATOR_ID))
+                .leftJoin(createdBy).on(createdBy.ID.eq(ROOM.CREATED_BY_ID))
+                .leftJoin(ROOM_MEMBERSHIP).on(ROOM_MEMBERSHIP.USER_ID.eq(ROOM.CREATED_BY_ID))
+                .leftJoin(nestedRoom).on(nestedRoom.ID.eq(ROOM_MEMBERSHIP.ROOM_ID))
+                .leftJoin(nestedAdmin).on(nestedAdmin.ID.eq(nestedRoom.ADMINISTRATOR_ID))
+                .leftJoin(nestedCreatedBy).on(nestedCreatedBy.ID.eq(nestedRoom.CREATED_BY_ID))
+                .where(ROOM.ID.eq(empty.getId()))
+                .fetch()
+                .stream()
+                .collect(
+                        Room.mapper
+                                .withAdmin(User.mapper.alias(admin))
+                                .collectingWithCreatedBy(
+                                        User.mapper.alias(createdBy)
+                                                .collectingWithRooms(nestedRoomMapper)
+                                )
+                )
+                .orElseThrow(IllegalStateException::new);
+
+        assertEquals(
+                empty.toBuilder()
+                        .setCreatedBy(
+                                matias.toBuilder()
+                                        .setRooms(Collections.singletonList(general))
+                                        .build()
+                        )
+                        .build(),
+                room
+        );
+    }
+
     private static final User antti = User.builder()
             .setId(1)
             .setRole(Role.SUPERADMIN)

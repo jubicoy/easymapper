@@ -36,8 +36,8 @@ public final class Jooq {
         );
     }
 
-    public static <R extends Record, IdentityT, T>
-            JooqReferenceAccessor<R, IdentityT, T> jooqReference(
+    public static <R extends Record, IdentityT, T, B>
+            JooqReferenceAccessor<R, IdentityT, T, B> jooqReference(
             TableField<R, IdentityT> field,
             Function<T, IdentityT> idGetter
     ) {

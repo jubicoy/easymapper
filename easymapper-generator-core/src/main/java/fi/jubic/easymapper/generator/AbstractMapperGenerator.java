@@ -24,7 +24,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.tools.Diagnostic;
 import java.io.IOException;
@@ -109,7 +108,8 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                                 id,
                                 TypeName.get(id.getReturnType()),
                                 id.getSimpleName().toString()
-                                        .replaceAll("^get", "")
+                                        .replaceAll("^get", ""),
+                                null
                         ))
                         .orElse(null),
                 propertyElements.stream()
@@ -123,7 +123,8 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                                 method,
                                 TypeName.get(method.getReturnType()),
                                 method.getSimpleName().toString()
-                                        .replaceAll("^(get|is)", "")
+                                        .replaceAll("^(get|is)", ""),
+                                null
                         ))
                         .collect(Collectors.toList()),
                 propertyElements.stream()
@@ -134,7 +135,11 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                                 method,
                                 TypeName.get(method.getReturnType()),
                                 method.getSimpleName().toString()
-                                        .replaceAll("^get", "")
+                                        .replaceAll("^get", ""),
+                                findElementByTypeName(
+                                        TypeName.get(method.getReturnType()),
+                                        roundEnvironment
+                                ).orElse(null)
                         ))
                         .collect(Collectors.toList()),
                 propertyElements.stream()
@@ -145,7 +150,11 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                                 method,
                                 TypeName.get(method.getReturnType()),
                                 method.getSimpleName().toString()
-                                        .replaceAll("^get", "")
+                                        .replaceAll("^get", ""),
+                                findElementByTypeName(
+                                        TypeName.get(method.getReturnType()),
+                                        roundEnvironment
+                                ).orElse(null)
                         ))
                         .collect(Collectors.toList()),
                 element.getEnclosedElements()

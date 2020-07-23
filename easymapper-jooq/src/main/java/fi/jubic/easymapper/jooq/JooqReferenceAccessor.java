@@ -9,9 +9,9 @@ import org.jooq.Table;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class JooqReferenceAccessor<R extends Record, IdentityT, T>
+public class JooqReferenceAccessor<R extends Record, IdentityT, T, B>
         implements FieldWriter<R, T>,
-        ReferenceExtractor<Record, T, RecordMapper<R, T>> {
+        ReferenceExtractor<Record, T, B, RecordMapper<R, T, B>> {
     private final Function<T, IdentityT> idGetter;
     private final JooqFieldAccessor<R, IdentityT> idAccessor;
 
@@ -34,18 +34,19 @@ public class JooqReferenceAccessor<R extends Record, IdentityT, T>
     }
 
     @Override
-    public T extract(Record input, RecordMapper<R, T> mapper) throws MappingException {
+    public T extract(Record input, RecordMapper<R, T, B> mapper) throws MappingException {
         return mapper.map(input);
     }
 
-    public JooqReferenceAccessor<R, IdentityT, T> alias(Table<R> tableAlias) {
+    public JooqReferenceAccessor<R, IdentityT, T, B> alias(Table<R> tableAlias) {
         return new JooqReferenceAccessor<>(
                 idGetter,
                 idAccessor.alias(tableAlias)
         );
     }
 
-    public static <R extends Record, IdentityT, T> JooqReferenceAccessor<R, IdentityT, T> noOp() {
+    public static <R extends Record, IdentityT, T, B>
+            JooqReferenceAccessor<R, IdentityT, T, B> noOp() {
         return new JooqReferenceAccessor<>(
                 ignore -> null,
                 new JooqFieldAccessor.NoOpAccessor<>()
