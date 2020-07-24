@@ -1,6 +1,7 @@
 package fi.jubic.easymapper;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Collector;
 
@@ -18,6 +19,20 @@ public interface Mapper<R, T, B> extends DefaultCollector<R, T> {
      * @throws MappingException if mapping fails.
      */
     T map(R source) throws MappingException;
+
+    /**
+     * Map record to optional value or empty if mapping return null of throws a
+     * {@link MappingException}.
+     * @param source Source record
+     */
+    default Optional<T> mapOptional(R source) {
+        try {
+            return Optional.ofNullable(map(source));
+        }
+        catch (MappingException ignore) {
+            return Optional.empty();
+        }
+    }
 
     /**
      * Collect in intermediate format.
