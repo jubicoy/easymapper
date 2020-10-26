@@ -18,7 +18,11 @@ public interface Mapper<R, T, B> extends DefaultCollector<R, T> {
      * @param source Source record
      * @throws MappingException if mapping fails.
      */
-    T map(R source) throws MappingException;
+    default T map(R source) throws MappingException {
+        return Optional.ofNullable(intermediateMap(source))
+                .map(this::finalize)
+                .orElse(null);
+    }
 
     /**
      * Map record to optional value or empty if mapping return null of throws a

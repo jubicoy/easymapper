@@ -10,6 +10,11 @@ public interface JooqFieldAccessor<R extends Record, F> extends FieldAccessor<R,
 
     class NoOpAccessor<R extends Record, F> implements JooqFieldAccessor<R, F> {
         @Override
+        public boolean shouldExtract() {
+            return false;
+        }
+
+        @Override
         public JooqFieldAccessor<R, F> alias(Table<R> tableAlias) {
             return this;
         }

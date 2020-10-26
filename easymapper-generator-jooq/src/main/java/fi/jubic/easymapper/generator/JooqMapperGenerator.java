@@ -261,63 +261,6 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
         }
         // endregion Mangler::write
 
-        // region Mapper::map
-        {
-            CodeBlock.Builder callBuilder = CodeBlock.builder()
-                    .add(
-                            "return $T.builder()",
-                            TypeName.get(valueDef.getElement().asType())
-                    );
-            valueDef.getProperties().forEach(
-                    property -> callBuilder.add(
-                            ".set$L($LAccessor.extract(inputRecord))",
-                            firstToUpper(property.getName()),
-                            firstToLower(property.getName())
-                    )
-            );
-            valueDef.getReferences().forEach(
-                    reference -> callBuilder.add(
-                            ".set$L("
-                                    + "$T.ofNullable($LMapper)"
-                                    + ".map(mapper -> mapper.map(input))"
-                                    + ".orElse(null)"
-                                    + ")",
-                            firstToUpper(reference.getName()),
-                            Optional.class,
-                            firstToLower(reference.getName())
-                    )
-            );
-            callBuilder.add(".build()");
-
-            mapperBuilder.addMethod(
-                    MethodSpec.methodBuilder("map")
-                            .addModifiers(Modifier.PUBLIC)
-                            .addAnnotation(Override.class)
-                            .returns(TypeName.get(valueDef.getElement().asType()))
-                            .addParameter(
-                                    ClassName.get(Record.class),
-                                    "input"
-                            )
-                            .addStatement(
-                                    "$T inputRecord = input.into($N)",
-                                    R,
-                                    FIELD_NAME_TABLE
-                            )
-                            .beginControlFlow(
-                                    "if ($LAccessor.extract(inputRecord) == null)",
-                                    firstToLower(
-                                            valueDef.getId()
-                                                    .orElseThrow(IllegalStateException::new)
-                                                    .getName()
-                                    ))
-                            .addStatement("return null")
-                            .endControlFlow()
-                            .addStatement(callBuilder.build())
-                            .build()
-            );
-        }
-        // endregion Mapper::map
-
         // region Mapper::intermediateMap
         {
             CodeBlock.Builder controlFlow = CodeBlock.builder()
@@ -327,11 +270,17 @@ public class JooqMapperGenerator extends AbstractMapperGenerator {
                             TypeName.get(valueDef.getElement().asType())
                     );
             valueDef.getProperties().forEach(
-                    property -> controlFlow.addStatement(
-                            "builder = builder.set$L($LAccessor.extract(inputRecord))",
-                            firstToUpper(property.getName()),
-                            firstToLower(property.getName())
-                    )
+                    property -> controlFlow
+                            .beginControlFlow(
+                                    "if ($LAccessor.shouldExtract())",
+                                    firstToLower(property.getName())
+                            )
+                            .addStatement(
+                                "builder = builder.set$L($LAccessor.extract(inputRecord))",
+                                firstToUpper(property.getName()),
+                                firstToLower(property.getName())
+                            )
+                            .endControlFlow()
             );
             valueDef.getReferences().forEach(
                     reference -> controlFlow
