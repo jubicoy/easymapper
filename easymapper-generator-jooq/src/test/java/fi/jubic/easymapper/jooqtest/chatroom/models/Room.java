@@ -29,13 +29,16 @@ public abstract class Room {
     public abstract Builder toBuilder();
 
     public static Builder builder() {
-        return new Builder()
-                .setMembers(Collections.emptyList())
-                .setMessages(Collections.emptyList());
+        return new Builder();
     }
 
     public static class Builder extends EasyValue_Room.Builder {
-
+        @Override
+        public Builder defaults(Builder builder) {
+            return builder
+                    .setMembers(Collections.emptyList())
+                    .setMessages(Collections.emptyList());
+        }
     }
 
     public static final RoomRecordMapper<RoomRecord> mapper = RoomRecordMapper.builder(ROOM)

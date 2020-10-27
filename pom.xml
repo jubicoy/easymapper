@@ -100,9 +100,8 @@
             <dependency>
                 <groupId>fi.jubic</groupId>
                 <artifactId>easyvalue</artifactId>
-                <version>1.0.0-rc1</version>
+                <version>1.1.0</version>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 

@@ -1,6 +1,7 @@
 package fi.jubic.easymapper.jooqtest.chatroom.models;
 
 import fi.jubic.easymapper.annotations.EasyId;
+import fi.jubic.easymapper.jooq.JooqFieldAccessor;
 import fi.jubic.easymapper.jooqtest.chatroom.db.tables.records.ChatUserRecord;
 import fi.jubic.easyvalue.EasyValue;
 
@@ -29,12 +30,16 @@ public abstract class User {
     public abstract Builder toBuilder();
 
     public static Builder builder() {
-        return new Builder()
-                .setMessages(Collections.emptyList())
-                .setRooms(Collections.emptyList());
+        return new Builder();
     }
 
     public static class Builder extends EasyValue_User.Builder {
+        @Override
+        public Builder defaults(Builder builder) {
+            return builder.setDeleted(false)
+                    .setMessages(Collections.emptyList())
+                    .setRooms(Collections.emptyList());
+        }
     }
 
     public static UserRecordMapper<ChatUserRecord> mapper = UserRecordMapper.builder(CHAT_USER)
