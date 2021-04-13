@@ -31,12 +31,4 @@
             <email>vilppu.vuorinen@jubic.fi</email>
         </developer>
     </developers>
-
-    <distributionManagement>
-        <repository>
-            <id>bintray-jubicoy-maven</id>
-            <name>jubicoy-maven</name>
-            <url>https://api.bintray.com/maven/jubicoy/maven/easymapper-core/;publish=1</url>
-        </repository>
-    </distributionManagement>
 </project>
