@@ -4,6 +4,7 @@ import fi.jubic.easymapper.MappingException;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.TableField;
+import org.jooq.impl.DSL;
 
 public class PlainJooqFieldAccessor<R extends Record, F> implements JooqFieldAccessor<R, F> {
     private final TableField<R, F> field;
@@ -26,7 +27,10 @@ public class PlainJooqFieldAccessor<R extends Record, F> implements JooqFieldAcc
     @Override
     public JooqFieldAccessor<R, F> alias(Table<R> tableAlias) {
         return new PlainJooqFieldAccessor<>(
-                (TableField<R, F>) tableAlias.field(field.getName(), field.getDataType())
+                (TableField<R, F>) DSL.field(
+                        tableAlias.getQualifiedName().append(field.getQualifiedName().last()),
+                        field.getDataType()
+                )
         );
     }
 }

@@ -76,35 +76,26 @@
             <plugin>
                 <groupId>org.jooq</groupId>
                 <artifactId>jooq-codegen-maven</artifactId>
-                <version>3.11.11</version>
-                <executions>
-                    <execution>
-                        <id>chat-sample</id>
-                        <configuration>
-                            <jdbc>
-                                <driver>org.h2.Driver</driver>
-                                <url>jdbc:h2:file:${project.basedir}/target/tmp/test-db</url>
-                                <user>SA</user>
-                                <password/>
-                            </jdbc>
-                            <generator>
-                                <name>org.jooq.codegen.JavaGenerator</name>
-                                <generate>
-                                    <daos>true</daos>
-                                </generate>
-                                <database>
-                                    <name>org.jooq.meta.h2.H2Database</name>
-                                    <includes>.*</includes>
-                                    <inputSchema>CHAT_SAMPLE</inputSchema>
-                                </database>
-                                <target>
-                                    <packageName>fi.jubic.easymapper.jooqtest.chatroom.db</packageName>
-                                    <directory>src/test/java</directory>
-                                </target>
-                            </generator>
-                        </configuration>
-                    </execution>
-                </executions>
+                <version>3.14.4</version>
+                <configuration>
+                    <jdbc>
+                        <driver>org.h2.Driver</driver>
+                        <url>jdbc:h2:file:${project.basedir}/target/tmp/test-db</url>
+                        <user>SA</user>
+                        <password/>
+                    </jdbc>
+                    <generator>
+                        <database>
+                            <name>org.jooq.meta.h2.H2Database</name>
+                            <includes>.*</includes>
+                            <inputSchema>CHAT_SAMPLE</inputSchema>
+                        </database>
+                        <target>
+                            <packageName>fi.jubic.easymapper.jooqtest.chatroom.db</packageName>
+                            <directory>src/test/java</directory>
+                        </target>
+                    </generator>
+                </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>com.h2database</groupId>
