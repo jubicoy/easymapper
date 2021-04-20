@@ -7,11 +7,11 @@
     <parent>
         <groupId>fi.jubic</groupId>
         <artifactId>easymapper-parent</artifactId>
-        <version>0.4.3</version>
+        <version>0.5.0</version>
     </parent>
 
     <artifactId>easymapper-generator-core</artifactId>
-    <version>0.4.3</version>
+    <version>0.5.0</version>
 
     <name>easymapper-generator-core</name>
     <description>Core mapping components to value objects.</description>
