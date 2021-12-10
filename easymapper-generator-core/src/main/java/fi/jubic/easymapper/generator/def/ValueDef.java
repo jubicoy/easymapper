@@ -1,6 +1,7 @@
 package fi.jubic.easymapper.generator.def;
 
 import javax.lang.model.element.TypeElement;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,9 +29,9 @@ public class ValueDef {
         this.name = name;
         this.element = element;
         this.id = id;
-        this.properties = properties;
-        this.references = references;
-        this.collectionReferences = collectionReferences;
+        this.properties = Collections.unmodifiableList(properties);
+        this.references = Collections.unmodifiableList(references);
+        this.collectionReferences = Collections.unmodifiableList(collectionReferences);
         this.builder = builder;
     }
 
@@ -47,15 +48,15 @@ public class ValueDef {
     }
 
     public List<PropertyDef> getProperties() {
-        return properties;
+        return Collections.unmodifiableList(properties);
     }
 
     public List<PropertyDef> getReferences() {
-        return references;
+        return Collections.unmodifiableList(references);
     }
 
     public List<PropertyDef> getCollectionReferences() {
-        return collectionReferences;
+        return Collections.unmodifiableList(collectionReferences);
     }
 
     public TypeElement getBuilder() {
