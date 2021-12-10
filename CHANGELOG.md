@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2021-12-10
+### Added
+- Full Java 17 support.
+
 ## [0.5.0] - 2021-04-20
 ### Changed
 - Upgrade easymapper-jooq to JOOQ 3.14.4.
