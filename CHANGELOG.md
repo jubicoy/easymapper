@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2021-12-13
+### Fixed
+- Updated easyvalue due to a bug in easyvalue 1.3.5.
+
 ## [0.5.1] - 2021-12-10
 ### Added
 - Full Java 17 support.
