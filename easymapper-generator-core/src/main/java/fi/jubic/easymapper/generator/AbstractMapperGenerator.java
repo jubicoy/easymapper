@@ -197,14 +197,15 @@ public abstract class AbstractMapperGenerator extends AbstractProcessor {
                     .writeTo(processingEnv.getFiler());
         }
         catch (IOException e) {
+            String message = String.format(
+                    "Could not write class [%s]",
+                    valueDef.getElement().getSimpleName().toString()
+            );
             messager.printMessage(
                     Diagnostic.Kind.ERROR,
-                    String.format(
-                            "Could not write class [%s]",
-                            valueDef.getElement().getSimpleName().toString()
-                    )
+                    message
             );
-            throw new RuntimeException(e);
+            throw new IllegalStateException(message, e);
         }
     }
 

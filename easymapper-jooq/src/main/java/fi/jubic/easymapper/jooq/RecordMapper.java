@@ -2,7 +2,6 @@ package fi.jubic.easymapper.jooq;
 
 import fi.jubic.easymapper.Mangler;
 import fi.jubic.easymapper.Mapper;
-import fi.jubic.easymapper.MappingException;
 import org.jooq.Record;
 import org.jooq.Table;
 
@@ -25,16 +24,9 @@ public interface RecordMapper<R extends Record, T, B>
     ) {
         return Collectors.collectingAndThen(
                 Collectors.groupingBy(
-                        record -> {
-                            try {
-                                return Optional.ofNullable(
-                                        partitionKeyAccessor.extract(record.into(table))
-                                );
-                            }
-                            catch (MappingException e) {
-                                throw new RuntimeException(e);
-                            }
-                        },
+                        record -> Optional.ofNullable(
+                                partitionKeyAccessor.extract(record.into(table))
+                        ),
                         collector
                 ),
                 map -> map.entrySet()
