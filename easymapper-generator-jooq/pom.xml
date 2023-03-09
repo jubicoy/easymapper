@@ -76,7 +76,7 @@
             <plugin>
                 <groupId>org.jooq</groupId>
                 <artifactId>jooq-codegen-maven</artifactId>
-                <version>3.14.4</version>
+                <version>3.18.0</version>
                 <configuration>
                     <jdbc>
                         <driver>org.h2.Driver</driver>
