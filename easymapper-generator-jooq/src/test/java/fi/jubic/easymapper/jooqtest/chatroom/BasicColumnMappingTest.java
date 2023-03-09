@@ -8,7 +8,7 @@ import fi.jubic.easymapper.jooqtest.chatroom.models.UserRecordMapper;
 import org.junit.jupiter.api.Test;
 
 import static fi.jubic.easymapper.jooqtest.chatroom.db.tables.ChatUser.CHAT_USER;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class BasicColumnMappingTest {
     @Test
