@@ -4,7 +4,15 @@
         <notes><![CDATA[
         The vulnerable create com.google.common.io.Files.createTempDir() is not used during runtime.
         ]]></notes>
-        <packageUrl>pkg:maven/com.google.guava/failureaccess@1.0.1</packageUrl>
+        <packageUrl regex="false">pkg:maven/com.google.guava/failureaccess@1.0.1</packageUrl>
+        <vulnerabilityName>CVE-2020-8908</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+        The vulnerable guava version is pulled in through auto-service. Given the provided
+        scope any temp file permissions issues are not relevant.
+        ]]></notes>
+        <packageUrl regex="true">pkg:maven/com\.google\.guava/guava@.+-jre</packageUrl>
         <vulnerabilityName>CVE-2020-8908</vulnerabilityName>
     </suppress>
     <suppress>
