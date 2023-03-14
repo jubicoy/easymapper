@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.5] - 2023-03-14
+### Changed
+- Upgrade easyvalue to 1.3.8.
+
 ## [0.5.4] - 2023-03-09
 ### Security
 - Update parent and dependencies.
