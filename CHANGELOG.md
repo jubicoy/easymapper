@@ -5,8 +5,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.5.6] - 2023-12-13
 ### Added
 - Java 21 tests.
+
+### Changed
+- Bump fi.jubic:easyparent from 0.1.10 to 0.1.11.
+- Bump fi.jubic:easyvalue from 1.3.8 to 1.4.0.
+- Bump auto-service from 1.0.1 to 1.1.1.
 
 ## [0.5.5] - 2023-03-14
 ### Changed

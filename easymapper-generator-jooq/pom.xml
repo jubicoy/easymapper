@@ -7,11 +7,11 @@
     <parent>
         <groupId>fi.jubic</groupId>
         <artifactId>easymapper-parent</artifactId>
-        <version>0.5.5</version>
+        <version>0.5.6</version>
     </parent>
 
     <artifactId>easymapper-generator-jooq</artifactId>
-    <version>0.5.5</version>
+    <version>0.5.6</version>
 
     <name>easymapper-generator-jooq</name>
     <description>Generate mappers for mapping JOOQ records to value objects.</description>
@@ -44,12 +44,12 @@
         <dependency>
             <groupId>fi.jubic</groupId>
             <artifactId>easymapper-jooq</artifactId>
-            <version>0.5.5</version>
+            <version>0.5.6</version>
         </dependency>
         <dependency>
             <groupId>fi.jubic</groupId>
             <artifactId>easymapper-generator-core</artifactId>
-            <version>0.5.5</version>
+            <version>0.5.6</version>
         </dependency>
 
         <dependency>
