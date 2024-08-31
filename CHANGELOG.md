@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.8] - 2024-08-31
+### Changed
+- Bump fi.jubic:easyvalue from 1.4.1 to 1.4.2.
+- Bump fi.jubic:easyparent from 0.1.12 to 0.1.13.
+
 ## [0.5.7] - 2024-05-06
 ### Changed
 - Bump fi.jubic:easyparent from 0.1.11 to 0.1.12.
